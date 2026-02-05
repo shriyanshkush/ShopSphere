@@ -15,12 +15,14 @@ import '../bloc/home_state.dart';
 
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final bool showBottomNav;
+
+  const HomePage({super.key, this.showBottomNav = true});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: const BottomNav(),
+      bottomNavigationBar: showBottomNav ? const BottomNav() : null,
       body: SafeArea(
         child: BlocBuilder<HomeBloc, HomeState>(
           builder: (context, state) {

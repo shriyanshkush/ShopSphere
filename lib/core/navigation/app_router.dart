@@ -5,7 +5,7 @@ import 'package:shopsphere/features/admin/presentation/pages/admin_shell_page.da
 import 'package:shopsphere/features/home/data/datasources/%20home_remote_data_source.dart';
 import 'package:shopsphere/features/home/data/repositories/home_repository_impl.dart';
 import 'package:shopsphere/features/home/presentation/bloc/home_bloc.dart';
-import 'package:shopsphere/features/home/presentation/pages/home_page.dart';
+import 'package:shopsphere/features/home/presentation/pages/home_shell_page.dart';
 import 'package:shopsphere/features/product_detail/data/datasources/product_detail_remote_data_source.dart';
 import 'package:shopsphere/features/product_detail/data/repositories/product_detail_repository_impl.dart';
 import 'package:shopsphere/features/product_detail/presentation/bloc/product_detail_bloc.dart';
@@ -42,7 +42,7 @@ class AppRouter {
                 HomeRemoteDataSource(),
               ),
             ),
-            child: const HomePage(),
+            child: const HomeShellPage(),
           ),
         );
 

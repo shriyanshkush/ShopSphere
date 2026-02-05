@@ -5,10 +5,13 @@ abstract class HomeEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Initial load
 class LoadHome extends HomeEvent {}
+class LoadCategories extends HomeEvent {}
+class LoadCategoryProducts extends HomeEvent {
+  final String category;
+  LoadCategoryProducts(this.category);
+}
 
-/// Search
 class SearchQueryChanged extends HomeEvent {
   final String query;
   SearchQueryChanged(this.query);
@@ -19,26 +22,31 @@ class SearchSubmitted extends HomeEvent {
   SearchSubmitted(this.query);
 }
 
-/// Filters
 class ApplyFilters extends HomeEvent {
-  final double minPrice;
-  final double maxPrice;
-  final double minRating;
-  final Set<String> brands;
+  final String? category;
+  final double? minPrice;
+  final double? maxPrice;
+  final double? minRating;
+  final String? sort;
 
   ApplyFilters({
-    required this.minPrice,
-    required this.maxPrice,
-    required this.minRating,
-    required this.brands,
+    this.category,
+    this.minPrice,
+    this.maxPrice,
+    this.minRating,
+    this.sort,
   });
 }
 
-/// Wishlist
 class ToggleWishlist extends HomeEvent {
   final String productId;
   ToggleWishlist(this.productId);
 }
 
-/// Cart
-class AddToCart extends HomeEvent {}
+class AddToCart extends HomeEvent {
+  final String productId;
+  AddToCart(this.productId);
+}
+
+class LoadCart extends HomeEvent {}
+class LoadWishlistProducts extends HomeEvent {}

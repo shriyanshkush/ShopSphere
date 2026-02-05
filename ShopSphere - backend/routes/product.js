@@ -7,6 +7,8 @@ const { searchLimiter } = require('../middlewares/rateLimiter');
 const productRouter = express.Router();
 
 productRouter.get('/api/products', auth, pagination, productController.getProducts);
+productRouter.get('/api/products/categories', auth, productController.getCategories);
+productRouter.get('/api/products/category/:category', auth, pagination, productController.getProductsByCategory);
 productRouter.get('/api/products/search/:name', auth, pagination, productController.searchProducts);
 productRouter.get('/api/products/suggestions', auth, searchLimiter, productController.getSearchSuggestions);
 productRouter.get('/api/deal-of-day', auth, productController.getDealOfDay);

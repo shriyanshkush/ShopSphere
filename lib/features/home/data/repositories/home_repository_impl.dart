@@ -1,5 +1,4 @@
 import 'package:shopsphere/features/home/data/datasources/%20home_remote_data_source.dart';
-
 import '../../domain/repositories/home_repository.dart';
 import '../models/product_model.dart';
 
@@ -8,42 +7,57 @@ class HomeRepositoryImpl implements HomeRepository {
 
   HomeRepositoryImpl(this.remote);
 
-  /// HOME
   @override
   Future<List<ProductModel>> getHomeProducts() async {
     final response = await remote.fetchHome();
     return response.products;
   }
 
-  /// SEARCH
   @override
-  Future<List<ProductModel>> searchProducts(String query) {
-    return remote.searchProducts(query);
+  Future<List<ProductModel>> searchProducts(
+    String query, {
+    String? category,
+    double? minPrice,
+    double? maxPrice,
+    String? sort,
+  }) {
+    return remote.searchProducts(
+      query,
+      category: category,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
+      sort: sort,
+    );
   }
 
-  /// SUGGESTIONS
   @override
   Future<List<String>> getSearchSuggestions(String query) {
     return remote.getSearchSuggestions(query);
   }
 
-  /// FILTERS
   @override
   Future<List<ProductModel>> getFilteredProducts({
-    required double minPrice,
-    required double maxPrice,
-    required double minRating,
-    required Set<String> brands,
+    double? minPrice,
+    double? maxPrice,
+    double? minRating,
+    String? category,
+    String? sort,
   }) {
     return remote.getFilteredProducts(
       minPrice: minPrice,
       maxPrice: maxPrice,
       minRating: minRating,
-      brands: brands,
+      category: category,
+      sort: sort,
     );
   }
 
-  /// WISHLIST
+  @override
+  Future<List<String>> getCategories() => remote.getCategories();
+
+  @override
+  Future<List<ProductModel>> getProductsByCategory(String category) => remote.getProductsByCategory(category);
+
   @override
   Future<void> toggleWishlist(String productId, bool add) {
     return remote.toggleWishlist(productId, add);
@@ -54,4 +68,12 @@ class HomeRepositoryImpl implements HomeRepository {
     return remote.fetchWishlist();
   }
 
+  @override
+  Future<List<ProductModel>> getWishlistProducts() => remote.fetchWishlistProducts();
+
+  @override
+  Future<void> addToCart(String productId) => remote.addToCart(productId);
+
+  @override
+  Future<Map<String, dynamic>> getCart() => remote.getCart();
 }

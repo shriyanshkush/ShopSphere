@@ -15,12 +15,14 @@ import '../bloc/home_state.dart';
 
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final bool showBottomNav;
+
+  const HomePage({super.key, this.showBottomNav = true});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: const BottomNav(),
+      bottomNavigationBar: showBottomNav ? const BottomNav() : null,
       body: SafeArea(
         child: BlocBuilder<HomeBloc, HomeState>(
           builder: (context, state) {
@@ -214,7 +216,14 @@ class HomePage extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: CategoryRow(
-                      categories: GlobalVariable.categories,
+                      categories: _buildCategoryItems(state),
+                      onCategoryTap: (name) {
+                        Navigator.pushNamed(context, Routes.categoryProducts, arguments: name);
+                      },
+                      onSeeAll: () {
+                        final first = state.categories.isEmpty ? 'Mobiles' : state.categories.first;
+                        Navigator.pushNamed(context, Routes.categoryProducts, arguments: first);
+                      },
                     ),
                   ),
                 ),
@@ -247,8 +256,8 @@ class HomePage extends StatelessWidget {
                       onWishlistTap: (id) => context
                           .read<HomeBloc>()
                           .add(ToggleWishlist(id)),
-                      onAddToCart: () =>
-                          context.read<HomeBloc>().add(AddToCart()),
+                      onAddToCart: (id) =>
+                          context.read<HomeBloc>().add(AddToCart(id)),
                       onProductTap: (id) {
                         Navigator.pushNamed(
                           context,
@@ -297,9 +306,8 @@ class _StickySearchBar extends StatelessWidget {
                       border: InputBorder.none,
                       isDense: true,
                     ),
-                    onChanged: (q) => context
-                        .read<HomeBloc>()
-                        .add(SearchSubmitted(q)),
+                    onChanged: (q) => context.read<HomeBloc>().add(SearchQueryChanged(q)),
+                    onSubmitted: (q) => context.read<HomeBloc>().add(SearchSubmitted(q)),
                   ),
                 ),
               ],
@@ -321,3 +329,19 @@ class _StickySearchBar extends StatelessWidget {
   }
 }
 
+
+List<Map<String, String>> _buildCategoryItems(HomeState state) {
+  if (state.categories.isEmpty) return GlobalVariable.categories;
+
+  String iconFor(String name) {
+    final n = name.toLowerCase();
+    if (n.contains('mobile')) return 'assets/icons/cell-phone.png';
+    if (n.contains('laptop')) return 'assets/icons/laptop.png';
+    if (n.contains('audio')) return 'assets/icons/headphone.png';
+    if (n.contains('watch')) return 'assets/icons/wristwatch.png';
+    if (n.contains('camera')) return 'assets/icons/photo_camera.png';
+    return 'assets/icons/laptop.png';
+  }
+
+  return state.categories.map((c) => {'name': c, 'icon': iconFor(c)}).toList();
+}

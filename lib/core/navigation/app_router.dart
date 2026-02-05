@@ -5,7 +5,11 @@ import 'package:shopsphere/features/admin/presentation/pages/admin_shell_page.da
 import 'package:shopsphere/features/home/data/datasources/%20home_remote_data_source.dart';
 import 'package:shopsphere/features/home/data/repositories/home_repository_impl.dart';
 import 'package:shopsphere/features/home/presentation/bloc/home_bloc.dart';
-import 'package:shopsphere/features/home/presentation/pages/home_page.dart';
+import 'package:shopsphere/features/home/presentation/bloc/home_event.dart';
+import 'package:shopsphere/features/home/presentation/pages/home_shell_page.dart';
+import 'package:shopsphere/features/home/presentation/pages/category_products_page.dart';
+import 'package:shopsphere/features/home/presentation/pages/wishlist_page.dart';
+import 'package:shopsphere/features/home/presentation/pages/cart_page.dart';
 import 'package:shopsphere/features/product_detail/data/datasources/product_detail_remote_data_source.dart';
 import 'package:shopsphere/features/product_detail/data/repositories/product_detail_repository_impl.dart';
 import 'package:shopsphere/features/product_detail/presentation/bloc/product_detail_bloc.dart';
@@ -42,7 +46,7 @@ class AppRouter {
                 HomeRemoteDataSource(),
               ),
             ),
-            child: const HomePage(),
+            child: const HomeShellPage(),
           ),
         );
 
@@ -69,6 +73,31 @@ class AppRouter {
           ),
         );
 
+
+      case Routes.categoryProducts:
+        final category = settings.arguments as String;
+        return _page(
+          BlocProvider(
+            create: (_) => HomeBloc(HomeRepositoryImpl(HomeRemoteDataSource())),
+            child: CategoryProductsPage(category: category),
+          ),
+        );
+
+      case Routes.wishlist:
+        return _page(
+          BlocProvider(
+            create: (_) => HomeBloc(HomeRepositoryImpl(HomeRemoteDataSource()))..add(LoadHome())..add(LoadWishlistProducts()),
+            child: const WishlistPage(),
+          ),
+        );
+
+      case Routes.cart:
+        return _page(
+          BlocProvider(
+            create: (_) => HomeBloc(HomeRepositoryImpl(HomeRemoteDataSource()))..add(LoadCart()),
+            child: const CartPage(),
+          ),
+        );
 
 
       default:

@@ -8,6 +8,7 @@ import 'package:shopsphere/features/home/presentation/bloc/home_state.dart';
 class SearchPage extends StatefulWidget {
   final VoidCallback? onBackToHome;
   const SearchPage({super.key, this.onBackToHome});
+  const SearchPage({super.key});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -35,6 +36,13 @@ class _SearchPageState extends State<SearchPage> {
             icon: const Icon(Icons.shopping_cart_outlined),
             onPressed: () => Navigator.pushNamed(context, Routes.cart),
           ),
+        leading: const Icon(Icons.arrow_back),
+        title: _SearchField(controller: _controller),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: Icon(Icons.shopping_cart_outlined),
+          )
         ],
       ),
       body: BlocBuilder<HomeBloc, HomeState>(
@@ -61,6 +69,17 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                     const SizedBox(width: 8),
                     const _SortPill(),
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    _PillButton(label: 'Filter', icon: Icons.tune),
+                    SizedBox(width: 8),
+                    _PillButton(label: 'Sort', icon: Icons.keyboard_arrow_down),
+                    SizedBox(width: 8),
+                    _PillButton(label: 'Brand', icon: Icons.keyboard_arrow_down),
+                    SizedBox(width: 8),
+                    _PillButton(label: 'Price', icon: Icons.keyboard_arrow_down),
                   ],
                 ),
               ),
@@ -69,6 +88,10 @@ class _SearchPageState extends State<SearchPage> {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text('Over ${state.products.length} results for "${_controller.text}"', style: const TextStyle(fontSize: 18, color: Color(0xFF63708A))),
+                  child: Text(
+                    'Over ${state.products.length} results for "${_controller.text}"',
+                    style: const TextStyle(fontSize: 18, color: Color(0xFF63708A)),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -89,6 +112,11 @@ class _SearchPageState extends State<SearchPage> {
                           return _SearchCard(
                             onTap: () => Navigator.pushNamed(context, Routes.productDetail, arguments: product.id),
                             onAddToCart: () => context.read<HomeBloc>().add(AddToCart(product.id)),
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              Routes.productDetail,
+                              arguments: product.id,
+                            ),
                             image: product.images.isNotEmpty ? product.images.first : '',
                             title: product.name,
                             rating: product.rating,
@@ -230,6 +258,17 @@ class _SortPill extends StatelessWidget {
           ],
           child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Text('Sort', style: TextStyle(fontWeight: FontWeight.w600)), SizedBox(width: 6), Icon(Icons.keyboard_arrow_down)]),
         ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: OutlinedButton(
+                  onPressed: () {},
+                  style: OutlinedButton.styleFrom(minimumSize: const Size(240, 52)),
+                  child: const Text('See more results'),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -267,6 +306,36 @@ class _SearchField extends StatelessWidget {
 class _SearchCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onAddToCart;
+class _PillButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  const _PillButton({required this.label, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        height: 50,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF2F5F8),
+          borderRadius: BorderRadius.circular(12),
+          border: label == 'Filter' ? Border.all(color: const Color(0xFFBDE0FF)) : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(label, style: TextStyle(color: label == 'Filter' ? Colors.blue : Colors.black, fontWeight: FontWeight.w600)),
+            const SizedBox(width: 4),
+            Icon(icon, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchCard extends StatelessWidget {
+  final VoidCallback onTap;
   final String image;
   final String title;
   final double rating;
@@ -297,6 +366,10 @@ class _SearchCard extends StatelessWidget {
             children: [
               if (image.isNotEmpty)
                 ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(image, height: 130, width: double.infinity, fit: BoxFit.cover))
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(image, height: 130, width: double.infinity, fit: BoxFit.cover),
+                )
               else
                 Container(height: 130, color: Colors.grey.shade200),
               const SizedBox(height: 10),
@@ -307,6 +380,20 @@ class _SearchCard extends StatelessWidget {
               Text('\$${price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
               const Spacer(),
               SizedBox(width: double.infinity, child: ElevatedButton(onPressed: onAddToCart, child: const Text('Add to Cart'))),
+              Row(
+                children: [
+                  const Icon(Icons.star, color: Colors.orange, size: 16),
+                  const SizedBox(width: 4),
+                  Text('${rating.toStringAsFixed(1)} ($reviews)'),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text('\$${price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(onPressed: () {}, child: const Text('Add to Cart')),
+              ),
             ],
           ),
         ),

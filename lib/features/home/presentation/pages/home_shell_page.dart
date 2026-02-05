@@ -3,6 +3,8 @@ import 'package:shopsphere/features/home/presentation/pages/cart_page.dart';
 import 'package:shopsphere/features/home/presentation/pages/home_page.dart';
 import 'package:shopsphere/features/home/presentation/pages/search_page.dart';
 import 'package:shopsphere/features/home/presentation/pages/wishlist_page.dart';
+import 'package:shopsphere/features/home/presentation/pages/home_page.dart';
+import 'package:shopsphere/features/home/presentation/pages/search_page.dart';
 import 'package:shopsphere/features/profile/presentation/pages/profile_page.dart';
 
 class HomeShellPage extends StatefulWidget {
@@ -21,6 +23,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
       const HomePage(showBottomNav: false),
       SearchPage(onBackToHome: () => setState(() => _index = 0)),
       const CartPage(),
+      const SearchPage(),
       const ProfilePage(),
       const _MorePage(),
     ];
@@ -51,5 +54,10 @@ class _MorePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const WishlistPage();
+    return const Scaffold(
+      body: Center(
+        child: Text('More options coming soon'),
+      ),
+    );
   }
 }

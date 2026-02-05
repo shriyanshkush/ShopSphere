@@ -10,6 +10,7 @@ import 'package:shopsphere/features/home/presentation/pages/home_shell_page.dart
 import 'package:shopsphere/features/home/presentation/pages/category_products_page.dart';
 import 'package:shopsphere/features/home/presentation/pages/wishlist_page.dart';
 import 'package:shopsphere/features/home/presentation/pages/cart_page.dart';
+import 'package:shopsphere/features/home/presentation/pages/home_shell_page.dart';
 import 'package:shopsphere/features/product_detail/data/datasources/product_detail_remote_data_source.dart';
 import 'package:shopsphere/features/product_detail/data/repositories/product_detail_repository_impl.dart';
 import 'package:shopsphere/features/product_detail/presentation/bloc/product_detail_bloc.dart';

@@ -78,6 +78,45 @@ class ProfilePage extends StatelessWidget {
                           Expanded(child: _QuickCard('Wishlist', Icons.favorite_border, onTap: () => Navigator.pushNamed(context, Routes.wishlist))),
                           const SizedBox(width: 12),
                           const Expanded(child: _QuickCard('Logout', Icons.logout)),
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(colors: [Color(0xFF1BDDE2), Color(0xFF0FC6CF)]),
+                        borderRadius: BorderRadius.vertical(bottom: Radius.circular(36)),
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('amazon.in', style: TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.w800)),
+                          SizedBox(height: 18),
+                          Text('Welcome back,', style: TextStyle(color: Colors.white, fontSize: 26)),
+                          Text('Shrish', style: TextStyle(color: Colors.white, fontSize: 56, fontWeight: FontWeight.w800)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 14),
+                      child: Row(
+                        children: [
+                          Expanded(child: _QuickCard('Your Orders', Icons.shopping_bag_outlined)),
+                          SizedBox(width: 12),
+                          Expanded(child: _QuickCard('Become Seller', Icons.store_outlined)),
+                        ],
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.all(14),
+                      child: Row(
+                        children: [
+                          Expanded(child: _QuickCard('Wishlist', Icons.favorite_border)),
+                          SizedBox(width: 12),
+                          Expanded(child: _QuickCard('Logout', Icons.logout)),
                         ],
                       ),
                     ),
@@ -88,12 +127,16 @@ class ProfilePage extends StatelessWidget {
                         children: [
                           const Text('Recent Orders', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                           TextButton(onPressed: () {}, child: const Text('See all', style: TextStyle(color: Colors.cyan, fontWeight: FontWeight.w700))),
+                          const Text('Recent Orders', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+                          TextButton(onPressed: () {}, child: const Text('See all', style: TextStyle(color: Colors.cyan, fontSize: 22))),
                         ],
                       ),
                     ),
                     if (state.loading)
                       const Center(child: Padding(padding: EdgeInsets.all(30), child: CircularProgressIndicator()))
                     else ...[
+                      const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()))
+                    else
                       ...state.orders.map(
                         (e) => _OrderTile(
                           title: e.title,
@@ -129,6 +172,29 @@ class ProfilePage extends StatelessWidget {
       child: Icon(icon, color: Colors.white),
     );
   }
+                        ),
+                      ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CheckoutAddressPage()),
+                        ),
+                        child: const Text('Open Checkout Address Step'),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _QuickCard extends StatelessWidget {
@@ -151,6 +217,14 @@ class _QuickCard extends StatelessWidget {
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(icon, color: Colors.cyan), const SizedBox(height: 12), Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700))]),
       ),
+  const _QuickCard(this.title, this.icon);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 12)]),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(icon, color: Colors.cyan), const SizedBox(height: 16), Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700))]),
     );
   }
 }
@@ -166,6 +240,8 @@ class _OrderTile extends StatelessWidget {
 
   const _OrderTile({required this.title, required this.status, required this.image, required this.canTrack, required this.canReview, required this.productId, this.onReview});
 
+  const _OrderTile({required this.title, required this.status, required this.image, required this.canTrack, required this.canReview});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -179,6 +255,14 @@ class _OrderTile extends StatelessWidget {
             child: image.isNotEmpty
                 ? Image.network(image, height: 70, width: 70, fit: BoxFit.cover)
                 : Container(height: 70, width: 70, color: Colors.grey.shade200),
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)]),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.network(image, height: 74, width: 74, fit: BoxFit.cover),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -212,6 +296,24 @@ class _OrderTile extends StatelessWidget {
       onPressed: onTap,
       style: OutlinedButton.styleFrom(minimumSize: const Size(0, 34), padding: const EdgeInsets.symmetric(horizontal: 14)),
       child: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+    );
+  }
+                Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                Text(status, style: const TextStyle(fontSize: 16, color: Colors.cyan)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    if (canTrack) OutlinedButton(onPressed: () {}, child: const Text('Track')),
+                    if (canReview) OutlinedButton(onPressed: () {}, child: const Text('Review')),
+                    const SizedBox(width: 8),
+                    OutlinedButton(onPressed: () {}, child: const Text('Reorder')),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

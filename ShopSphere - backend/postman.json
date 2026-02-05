@@ -1,0 +1,324 @@
+{
+  "info": {
+    "name": "E-Commerce Backend - Full API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" }
+  ],
+  "item": [
+
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const res = pm.response.json();",
+                "pm.collectionVariables.set('accessToken', res.accessToken);",
+                "pm.collectionVariables.set('refreshToken', res.refreshToken);"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/signup"
+          }
+        },
+        {
+          "name": "Signin",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const res = pm.response.json();",
+                "pm.collectionVariables.set('accessToken', res.accessToken);",
+                "pm.collectionVariables.set('refreshToken', res.refreshToken);"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/signin"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.collectionVariables.set('accessToken', pm.response.json().accessToken);"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/refresh-token"
+          }
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/user"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-auth-token", "value": "{{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/logout"
+          }
+        }
+      ]
+    },
+
+   
+
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get Products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/products?page=1&limit=20"
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/products/search/iphone?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Search Suggestions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/products/suggestions?query=iph"
+          }
+        },
+        {
+          "name": "Deal of the Day",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/deal-of-day"
+          }
+        },
+        {
+          "name": "Track Product View",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/products/PRODUCT_ID/view"
+          }
+        },
+        {
+          "name": "Recently Viewed",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/products/recently-viewed"
+          }
+        }
+      ]
+    },
+
+    
+
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Add to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-auth-token", "value": "{{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"PRODUCT_ID\"\n}"
+            },
+            "url": "{{baseUrl}}/api/add-to-cart"
+          }
+        },
+        {
+          "name": "Remove from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/remove-from-cart/PRODUCT_ID"
+          }
+        }
+      ]
+    },
+
+    
+
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Place Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-auth-token", "value": "{{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cart\": [],\n  \"totalPrice\": 999,\n  \"address\": \"123 Main St\"\n}"
+            },
+            "url": "{{baseUrl}}/api/order"
+          }
+        },
+        {
+          "name": "My Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/orders/me?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Order Details",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/orders/ORDER_ID"
+          }
+        }
+      ]
+    },
+
+   
+    {
+      "name": "Wishlist",
+      "item": [
+        {
+          "name": "Get Wishlist",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/wishlist"
+          }
+        },
+        {
+          "name": "Add to Wishlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-auth-token", "value": "{{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"PRODUCT_ID\"\n}"
+            },
+            "url": "{{baseUrl}}/api/wishlist/add"
+          }
+        },
+        {
+          "name": "Remove from Wishlist",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/api/wishlist/remove/PRODUCT_ID"
+          }
+        },
+        {
+          "name": "Move to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-auth-token", "value": "{{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"PRODUCT_ID\"\n}"
+            },
+            "url": "{{baseUrl}}/api/wishlist/move-to-cart"
+          }
+        }
+      ]
+    },
+
+   
+
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Add Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-auth-token", "value": "{{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"iPhone 15\",\n  \"description\": \"Flagship\",\n  \"images\": [\"https://img.com/1.jpg\"],\n  \"quantity\": 50,\n  \"price\": 999,\n  \"category\": \"Mobiles\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/add-product"
+          }
+        },
+        {
+          "name": "Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/admin/analytics"
+          }
+        },
+        {
+          "name": "Inventory Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-auth-token", "value": "{{accessToken}}" }],
+            "url": "{{baseUrl}}/admin/inventory-report"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shopsphere/core/constants/Routes.dart';
 import 'package:shopsphere/features/product_detail/data/models/product_detail_model.dart';
 import 'package:shopsphere/features/product_detail/presentation/pages/review_list_page.dart';
 import 'package:shopsphere/features/product_detail/presentation/pages/write_review_page.dart';
 
-import '../../domain/repositories/product_detail_repository.dart';
 import '../bloc/product_detail_bloc.dart';
 import '../bloc/product_detail_event.dart';
 import '../bloc/product_detail_state.dart';
@@ -38,8 +38,13 @@ class ProductDetailPage extends StatelessWidget {
         return Scaffold(
           backgroundColor: Colors.white,
           bottomNavigationBar: _BottomActionBar(
-            onAddToCart: () =>
-                context.read<ProductDetailBloc>().add(AddToCart()),
+            onAddToCart: () {
+              context.read<ProductDetailBloc>().add(AddToCart());
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Added to cart')),
+              );
+            },
+            onBuyNow: () => Navigator.pushNamed(context, Routes.checkoutAddress),
           ),
           body: SafeArea(
             child: SingleChildScrollView(
@@ -48,9 +53,8 @@ class ProductDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _TopBar(
-                    onWishlist: () => context
-                        .read<ProductDetailBloc>()
-                        .add(ToggleWishlist()),
+                    isWishlisted: state.isWishlisted,
+                    onWishlist: () => context.read<ProductDetailBloc>().add(ToggleWishlist()),
                   ),
                   _ImageCarousel(images: product.images),
                   _ProductInfo(product: product),
@@ -74,7 +78,8 @@ class ProductDetailPage extends StatelessWidget {
 
 class _TopBar extends StatelessWidget {
   final VoidCallback onWishlist;
-  const _TopBar({required this.onWishlist});
+  final bool isWishlisted;
+  const _TopBar({required this.onWishlist, required this.isWishlisted});
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +97,8 @@ class _TopBar extends StatelessWidget {
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.favorite_border),
+            icon: Icon(isWishlisted ? Icons.favorite : Icons.favorite_border),
+            color: isWishlisted ? Colors.redAccent : null,
             onPressed: onWishlist,
           ),
         ],
@@ -378,7 +384,8 @@ class _ReviewSection extends StatelessWidget {
 
 class _BottomActionBar extends StatelessWidget {
   final VoidCallback onAddToCart;
-  const _BottomActionBar({required this.onAddToCart});
+  final VoidCallback onBuyNow;
+  const _BottomActionBar({required this.onAddToCart, required this.onBuyNow});
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +406,7 @@ class _BottomActionBar extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.cyan,
                 ),
-                onPressed: () {},
+                onPressed: onBuyNow,
                 child: const Text('Buy Now'),
               ),
             ),

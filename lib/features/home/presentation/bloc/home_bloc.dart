@@ -49,7 +49,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _searchSuggestions(SearchQueryChanged event, Emitter<HomeState> emit) async {
-    if (event.query.length < 2) return;
+    if (event.query.trim().isEmpty) {
+      emit(state.copyWith(suggestions: []));
+      return;
+    }
+    if (event.query.length < 2) {
+      emit(state.copyWith(suggestions: []));
+      return;
+    }
     final suggestions = await repo.getSearchSuggestions(event.query);
     emit(state.copyWith(suggestions: suggestions));
   }
@@ -130,4 +137,3 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(state.copyWith(wishlistProducts: items));
   }
 }
-

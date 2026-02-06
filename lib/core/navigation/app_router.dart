@@ -15,6 +15,9 @@ import 'package:shopsphere/features/product_detail/data/datasources/product_deta
 import 'package:shopsphere/features/product_detail/data/repositories/product_detail_repository_impl.dart';
 import 'package:shopsphere/features/product_detail/presentation/bloc/product_detail_bloc.dart';
 import 'package:shopsphere/features/product_detail/presentation/pages/product_detail_page.dart';
+import 'package:shopsphere/features/checkout/presentation/pages/checkout_address_page.dart';
+import 'package:shopsphere/features/checkout/presentation/pages/checkout_payment_page.dart';
+import 'package:shopsphere/features/checkout/presentation/pages/checkout_review_page.dart';
 
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
@@ -100,6 +103,14 @@ class AppRouter {
           ),
         );
 
+      case Routes.checkoutAddress:
+        return _page(const CheckoutAddressPage());
+
+      case Routes.checkoutPayment:
+        return _page(const CheckoutPaymentPage());
+
+      case Routes.checkoutReview:
+        return _page(const CheckoutReviewPage());
 
       default:
         return _page(

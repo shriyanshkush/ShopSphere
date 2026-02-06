@@ -8,7 +8,6 @@ import 'package:shopsphere/features/home/presentation/bloc/home_state.dart';
 class SearchPage extends StatefulWidget {
   final VoidCallback? onBackToHome;
   const SearchPage({super.key, this.onBackToHome});
-  const SearchPage({super.key});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -25,50 +24,34 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  void _updateSearch(String value) {
+    context.read<HomeBloc>().add(SearchQueryChanged(value));
+    context.read<HomeBloc>().add(SearchSubmitted(value));
+  }
+
+  void _applySuggestion(String suggestion) {
+    _controller.text = suggestion;
+    _controller.selection = TextSelection.fromPosition(TextPosition(offset: suggestion.length));
+    _updateSearch(suggestion);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.onBackToHome),
-        title: _SearchField(controller: _controller),
+        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.onBackToHome ?? () => Navigator.pop(context)),
+        title: _SearchField(controller: _controller, onChanged: _updateSearch),
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart_outlined),
             onPressed: () => Navigator.pushNamed(context, Routes.cart),
           ),
-        leading: const Icon(Icons.arrow_back),
-        title: _SearchField(controller: _controller),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: Icon(Icons.shopping_cart_outlined),
-          )
         ],
       ),
       body: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
           return Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => _openFilter(context, state),
-                        child: Container(
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF2F5F8),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFBDE0FF)),
-                          ),
-                          child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Text('Filter', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)), SizedBox(width: 6), Icon(Icons.tune, size: 18)]),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const _SortPill(),
               const Padding(
                 padding: EdgeInsets.all(12),
                 child: Row(
@@ -83,11 +66,18 @@ class _SearchPageState extends State<SearchPage> {
                   ],
                 ),
               ),
+              if (state.suggestions.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _SuggestionList(
+                    suggestions: state.suggestions,
+                    onSelected: _applySuggestion,
+                  ),
+                ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('Over ${state.products.length} results for "${_controller.text}"', style: const TextStyle(fontSize: 18, color: Color(0xFF63708A))),
                   child: Text(
                     'Over ${state.products.length} results for "${_controller.text}"',
                     style: const TextStyle(fontSize: 18, color: Color(0xFF63708A)),
@@ -110,13 +100,12 @@ class _SearchPageState extends State<SearchPage> {
                         itemBuilder: (context, index) {
                           final product = state.products[index];
                           return _SearchCard(
-                            onTap: () => Navigator.pushNamed(context, Routes.productDetail, arguments: product.id),
-                            onAddToCart: () => context.read<HomeBloc>().add(AddToCart(product.id)),
                             onTap: () => Navigator.pushNamed(
                               context,
                               Routes.productDetail,
                               arguments: product.id,
                             ),
+                            onAddToCart: () => context.read<HomeBloc>().add(AddToCart(product.id)),
                             image: product.images.isNotEmpty ? product.images.first : '',
                             title: product.name,
                             rating: product.rating,
@@ -132,180 +121,8 @@ class _SearchPageState extends State<SearchPage> {
       ),
     );
   }
-
-  Future<void> _openFilter(BuildContext context, HomeState state) async {
-    String selectedCategory = state.selectedCategory;
-    double minPrice = state.minPrice;
-    double maxPrice = state.maxPrice;
-    double minRating = state.minRating;
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setSt) {
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(child: Container(width: 80, height: 8, decoration: BoxDecoration(color: const Color(0xFFE8F2F2), borderRadius: BorderRadius.circular(20)))),
-                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Filters', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)), IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close))]),
-                      const SizedBox(height: 12),
-                      const Text('Category', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: [
-                          for (final c in (state.categories.isEmpty ? ['Mobiles','Laptops','Audio','Watches'] : state.categories))
-                            ChoiceChip(
-                              label: Text(c),
-                              selected: selectedCategory == c,
-                              onSelected: (_) => setSt(() => selectedCategory = c),
-                              selectedColor: Colors.cyan,
-                              labelStyle: TextStyle(color: selectedCategory == c ? Colors.white : Colors.black, fontWeight: FontWeight.w600),
-                            )
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      Text('Price Range   \$${minPrice.toInt()} - \$${maxPrice.toInt()}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                      RangeSlider(
-                        values: RangeValues(minPrice, maxPrice),
-                        min: 0,
-                        max: 2000,
-                        onChanged: (v) => setSt(() {
-                          minPrice = v.start;
-                          maxPrice = v.end;
-                        }),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text('Rating', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                      Slider(
-                        value: minRating,
-                        min: 0,
-                        max: 5,
-                        divisions: 5,
-                        label: minRating.toStringAsFixed(0),
-                        onChanged: (v) => setSt(() => minRating = v),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => setSt(() {
-                                selectedCategory = '';
-                                minPrice = 120;
-                                maxPrice = 850;
-                                minRating = 0;
-                              }),
-                              child: const Text('Clear All'),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                context.read<HomeBloc>().add(
-                                      ApplyFilters(
-                                        category: selectedCategory,
-                                        minPrice: minPrice,
-                                        maxPrice: maxPrice,
-                                        minRating: minRating,
-                                      ),
-                                    );
-                                Navigator.pop(ctx);
-                              },
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
-                              child: Text('Apply Filters (${state.products.length})'),
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
 }
 
-class _SortPill extends StatelessWidget {
-  const _SortPill();
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        height: 50,
-        decoration: BoxDecoration(color: const Color(0xFFF2F5F8), borderRadius: BorderRadius.circular(12)),
-        child: PopupMenuButton<String>(
-          onSelected: (v) => context.read<HomeBloc>().add(ApplyFilters(sort: v)),
-          itemBuilder: (_) => const [
-            PopupMenuItem(value: 'price_asc', child: Text('Price Low to High')),
-            PopupMenuItem(value: 'price_desc', child: Text('Price High to Low')),
-            PopupMenuItem(value: 'rating_desc', child: Text('Top Rated')),
-          ],
-          child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Text('Sort', style: TextStyle(fontWeight: FontWeight.w600)), SizedBox(width: 6), Icon(Icons.keyboard_arrow_down)]),
-        ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(minimumSize: const Size(240, 52)),
-                  child: const Text('See more results'),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _SearchField extends StatelessWidget {
-  final TextEditingController controller;
-  const _SearchField({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(color: const Color(0xFFF2F5F8), borderRadius: BorderRadius.circular(14)),
-      child: TextField(
-        controller: controller,
-        onChanged: (v) => context.read<HomeBloc>().add(SearchQueryChanged(v)),
-        onSubmitted: (v) => context.read<HomeBloc>().add(SearchSubmitted(v)),
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF61758F)),
-          suffixIcon: IconButton(
-            onPressed: () {
-              controller.clear();
-              context.read<HomeBloc>().add(SearchSubmitted(''));
-            },
-            icon: const Icon(Icons.cancel, color: Color(0xFF61758F)),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SearchCard extends StatelessWidget {
-  final VoidCallback onTap;
-  final VoidCallback onAddToCart;
 class _PillButton extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -334,8 +151,73 @@ class _PillButton extends StatelessWidget {
   }
 }
 
+class _SearchField extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  const _SearchField({required this.controller, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 50,
+      decoration: BoxDecoration(color: const Color(0xFFF2F5F8), borderRadius: BorderRadius.circular(14)),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        onSubmitted: onChanged,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          prefixIcon: const Icon(Icons.search, color: Color(0xFF61758F)),
+          suffixIcon: IconButton(
+            onPressed: () {
+              controller.clear();
+              onChanged('');
+            },
+            icon: const Icon(Icons.cancel, color: Color(0xFF61758F)),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SuggestionList extends StatelessWidget {
+  final List<String> suggestions;
+  final ValueChanged<String> onSelected;
+
+  const _SuggestionList({required this.suggestions, required this.onSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8EF)),
+        boxShadow: const [
+          BoxShadow(color: Color(0x11000000), blurRadius: 8, offset: Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        children: suggestions
+            .map(
+              (item) => ListTile(
+                dense: true,
+                leading: const Icon(Icons.search, size: 18),
+                title: Text(item),
+                onTap: () => onSelected(item),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+}
+
 class _SearchCard extends StatelessWidget {
   final VoidCallback onTap;
+  final VoidCallback onAddToCart;
   final String image;
   final String title;
   final double rating;
@@ -365,7 +247,6 @@ class _SearchCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (image.isNotEmpty)
-                ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(image, height: 130, width: double.infinity, fit: BoxFit.cover))
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(image, height: 130, width: double.infinity, fit: BoxFit.cover),
@@ -380,20 +261,6 @@ class _SearchCard extends StatelessWidget {
               Text('\$${price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
               const Spacer(),
               SizedBox(width: double.infinity, child: ElevatedButton(onPressed: onAddToCart, child: const Text('Add to Cart'))),
-              Row(
-                children: [
-                  const Icon(Icons.star, color: Colors.orange, size: 16),
-                  const SizedBox(width: 4),
-                  Text('${rating.toStringAsFixed(1)} ($reviews)'),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text('\$${price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(onPressed: () {}, child: const Text('Add to Cart')),
-              ),
             ],
           ),
         ),

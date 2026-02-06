@@ -32,6 +32,7 @@ class ProductDetailBloc
   Future<void> _wishlist(
       ToggleWishlist e, Emitter<ProductDetailState> emit) async {
     await repo.toggleWishlist(productId);
+    emit(state.copyWith(isWishlisted: !state.isWishlisted));
   }
 
   Future<void> _cart(AddToCart e, Emitter<ProductDetailState> emit) async {

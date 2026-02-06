@@ -10,5 +10,8 @@ class Routes {
   static const categoryProducts = '/category-products';
   static const wishlist = '/wishlist';
   static const cart = '/cart';
+  static const checkoutAddress = '/checkout/address';
+  static const checkoutPayment = '/checkout/payment';
+  static const checkoutReview = '/checkout/review';
 
 }

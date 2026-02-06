@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shopsphere/core/constants/Routes.dart';
 import 'package:shopsphere/features/checkout/data/datasources/checkout_remote_data_source.dart';
 import 'package:shopsphere/features/checkout/data/repositories/checkout_repository_impl.dart';
 import 'package:shopsphere/features/checkout/presentation/bloc/checkout_bloc.dart';
@@ -12,7 +14,11 @@ class CheckoutAddressPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => CheckoutBloc(CheckoutRepositoryImpl(CheckoutRemoteDataSource()))..add(LoadAddresses()),
+      create: (_) => CheckoutBloc(
+        CheckoutRepositoryImpl(
+          CheckoutRemoteDataSource(),
+        ),
+      )..add(LoadAddresses()),
       child: const _CheckoutAddressView(),
     );
   }
@@ -20,21 +26,6 @@ class CheckoutAddressPage extends StatelessWidget {
 
 class _CheckoutAddressView extends StatelessWidget {
   const _CheckoutAddressView();
-
-class CheckoutAddressPage extends StatefulWidget {
-  const CheckoutAddressPage({super.key});
-
-  @override
-  State<CheckoutAddressPage> createState() => _CheckoutAddressPageState();
-}
-
-class _CheckoutAddressPageState extends State<CheckoutAddressPage> {
-  int selected = 0;
-
-  final addresses = const [
-    ('Jane Doe (Home)', '123 Maple St, Springfield, IL, 62704', '+1 (555) 012-3456'),
-    ('Jane Doe (Office)', '456 Business Ave, Suite 200, Chicago, IL, 60601', '+1 (555) 987-6543'),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -136,6 +127,7 @@ class _CheckoutAddressPageState extends State<CheckoutAddressPage> {
                         ],
                       ),
               ),
+              const CheckoutCookieBanner(),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 decoration: const BoxDecoration(
@@ -157,7 +149,9 @@ class _CheckoutAddressPageState extends State<CheckoutAddressPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: selectedAddress == null ? null : () {},
+                        onPressed: selectedAddress == null
+                            ? null
+                            : () => Navigator.pushNamed(context, Routes.checkoutPayment),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           backgroundColor: Colors.cyan,
@@ -209,16 +203,16 @@ class _CheckoutAddressPageState extends State<CheckoutAddressPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       context.read<CheckoutBloc>().add(
-                        AddAddress(
-                          label: 'Home',
-                          fullName: fullName.text.trim(),
-                          line1: line1.text.trim(),
-                          city: city.text.trim(),
-                          state: state.text.trim(),
-                          zipCode: zipCode.text.trim(),
-                          phone: phone.text.trim(),
-                        ),
-                      );
+                            AddAddress(
+                              label: 'Home',
+                              fullName: fullName.text.trim(),
+                              line1: line1.text.trim(),
+                              city: city.text.trim(),
+                              state: state.text.trim(),
+                              zipCode: zipCode.text.trim(),
+                              phone: phone.text.trim(),
+                            ),
+                          );
                       Navigator.pop(ctx);
                     },
                     child: const Text('Save Address'),
@@ -238,81 +232,80 @@ class _CheckoutAddressPageState extends State<CheckoutAddressPage> {
       child: TextField(
         controller: controller,
         decoration: InputDecoration(hintText: hint, border: const OutlineInputBorder()),
-      appBar: AppBar(title: const Text('Checkout')),
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _StepCircle(step: 1, active: true, label: 'Address'),
-                _StepCircle(step: 2, active: false, label: 'Payment'),
-                _StepCircle(step: 3, active: false, label: 'Review'),
-              ],
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Select Shipping Address', style: TextStyle(fontSize: 34, fontWeight: FontWeight.w700)),
-                Text('Where should we deliver your order?', style: TextStyle(fontSize: 18, color: Color(0xFF77839A))),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: addresses.length,
-              itemBuilder: (context, index) {
-                final item = addresses[index];
-                final isSelected = selected == index;
-                return GestureDetector(
-                  onTap: () => setState(() => selected = index),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 14),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: isSelected ? Colors.cyan : const Color(0xFFE2E8EF), width: isSelected ? 2 : 1),
-                    ),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Row(children: [Icon(isSelected ? Icons.radio_button_checked : Icons.radio_button_off, color: isSelected ? Colors.cyan : Colors.grey), const SizedBox(width: 8), Text(item.$1, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)), const Spacer(), const Icon(Icons.edit, color: Color(0xFF92A0B3))]),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 30),
-                        child: Text(item.$2, style: const TextStyle(fontSize: 17, color: Color(0xFF2C3852))),
-                      ),
-                      const SizedBox(height: 6),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 30),
-                        child: Text(item.$3, style: const TextStyle(fontSize: 17, color: Color(0xFF63708A))),
-                      ),
-                    ]),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Selected Address', style: TextStyle(fontSize: 16, color: Color(0xFF63708A))), Text(addresses[selected].$1, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700))]),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), backgroundColor: Colors.cyan), child: const Text('Continue to Payment  →', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700))),
-              )
-            ],
-          ),
+    );
+  }
+}
+
+class CheckoutCookieBanner extends StatefulWidget {
+  const CheckoutCookieBanner({super.key});
+
+  @override
+  State<CheckoutCookieBanner> createState() => _CheckoutCookieBannerState();
+}
+
+class _CheckoutCookieBannerState extends State<CheckoutCookieBanner> {
+  static const _prefsKey = 'checkout_cookie_ack';
+  bool _dismissed = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadState();
+  }
+
+  Future<void> _loadState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getBool(_prefsKey) ?? false;
+    if (!mounted) return;
+    setState(() => _dismissed = seen);
+  }
+
+  Future<void> _acknowledge() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_prefsKey, true);
+    if (!mounted) return;
+    setState(() => _dismissed = true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_dismissed) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7FAFF),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE0E8F5)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'This site uses cookies from Google to deliver and enhance the quality of its services and to analyze traffic.',
+              style: TextStyle(fontSize: 13, color: Color(0xFF2C3852)),
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                TextButton(onPressed: () {}, child: const Text('Learn more')),
+                TextButton(onPressed: () {}, child: const Text('Sign in')),
+                TextButton(onPressed: () {}, child: const Text('Help')),
+                ElevatedButton(
+                  onPressed: _acknowledge,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
+                  child: const Text('OK, got it'),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -344,6 +337,5 @@ class _StepCircle extends StatelessWidget {
         Text(label, style: TextStyle(color: active ? Colors.cyan : const Color(0xFFA1ACBE), fontWeight: FontWeight.w700)),
       ],
     );
-    return Column(children: [CircleAvatar(radius: 20, backgroundColor: active ? Colors.cyan : const Color(0xFFE9EDF3), child: Text('$step', style: TextStyle(color: active ? Colors.white : const Color(0xFF63708A), fontWeight: FontWeight.w700))), const SizedBox(height: 6), Text(label, style: TextStyle(color: active ? Colors.cyan : const Color(0xFFA1ACBE), fontWeight: FontWeight.w700))]);
   }
 }

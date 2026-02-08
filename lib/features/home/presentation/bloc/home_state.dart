@@ -21,6 +21,10 @@ class HomeState extends Equatable {
   final double minRating;
   final String sort;
 
+  final String searchQuery;
+  final bool isSearching;
+
+
   const HomeState({
     required this.loading,
     required this.products,
@@ -36,6 +40,8 @@ class HomeState extends Equatable {
     required this.maxPrice,
     required this.minRating,
     required this.sort,
+    required this.searchQuery,
+    required this.isSearching,
   });
 
   factory HomeState.initial() {
@@ -54,6 +60,8 @@ class HomeState extends Equatable {
       maxPrice: null,
       minRating: 0,
       sort: '',
+      searchQuery: '',
+      isSearching: false,
     );
   }
 
@@ -72,6 +80,8 @@ class HomeState extends Equatable {
     Object? maxPrice = _unset,
     double? minRating,
     String? sort,
+    String? searchQuery,
+    bool? isSearching,
   }) {
     return HomeState(
       loading: loading ?? this.loading,
@@ -88,6 +98,8 @@ class HomeState extends Equatable {
       maxPrice: maxPrice == _unset ? this.maxPrice : maxPrice as double?,
       minRating: minRating ?? this.minRating,
       sort: sort ?? this.sort,
+      searchQuery: searchQuery ?? this.searchQuery,
+      isSearching: isSearching ?? this.isSearching,
     );
   }
 
@@ -107,5 +119,7 @@ class HomeState extends Equatable {
         maxPrice,
         minRating,
         sort,
+    searchQuery,
+    isSearching,
       ];
 }

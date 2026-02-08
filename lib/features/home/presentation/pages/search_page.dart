@@ -16,7 +16,7 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  final TextEditingController _controller = TextEditingController(text: 'laptops');
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
@@ -39,6 +39,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _openFilterSheet(HomeState state) {
+    final homeBloc = context.read<HomeBloc>(); // ✅ FIX
     final products = state.products;
     final prices = products.map((p) => p.price).toList();
     double minLimit = prices.isEmpty ? 0 : prices.reduce(min);
@@ -167,7 +168,7 @@ class _SearchPageState extends State<SearchPage> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           ),
                           onPressed: () {
-                            context.read<HomeBloc>().add(ApplyFilters(clear: true));
+                            homeBloc.add(ApplyFilters(clear: true)); // ✅
                             Navigator.pop(context);
                           },
                           child: const Text('Clear All', style: TextStyle(color: Color(0xFF18C4D9), fontWeight: FontWeight.w700)),
@@ -182,13 +183,13 @@ class _SearchPageState extends State<SearchPage> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           ),
                           onPressed: () {
-                            context.read<HomeBloc>().add(
-                                  ApplyFilters(
-                                    category: selectedCategory,
-                                    minPrice: selectedMin,
-                                    maxPrice: selectedMax,
-                                  ),
-                                );
+                            homeBloc.add( // ✅ USE CAPTURED BLOC
+                              ApplyFilters(
+                                category: selectedCategory,
+                                minPrice: selectedMin,
+                                maxPrice: selectedMax,
+                              ),
+                            );
                             Navigator.pop(context);
                           },
                           child: Text(

@@ -57,3 +57,4 @@ class RemoveFromCart extends HomeEvent {
 
 class LoadCart extends HomeEvent {}
 class LoadWishlistProducts extends HomeEvent {}
+class ClearSearch extends HomeEvent {}

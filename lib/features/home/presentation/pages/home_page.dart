@@ -27,9 +27,10 @@ class HomePage extends StatelessWidget {
         child: BlocBuilder<HomeBloc, HomeState>(
           builder: (context, state) {
             /// 🔑 Load home once
-            if (!state.loading && state.products.isEmpty) {
+            if (!state.loading && state.products.isEmpty && !state.isSearching) {
               context.read<HomeBloc>().add(LoadHome());
             }
+
 
             if (state.loading) {
               return const Center(child: CircularProgressIndicator());
@@ -278,56 +279,96 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _StickySearchBar extends StatelessWidget {
+class _StickySearchBar extends StatefulWidget {
+  @override
+  State<_StickySearchBar> createState() => _StickySearchBarState();
+}
+
+class _StickySearchBarState extends State<_StickySearchBar> {
+  final controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 52,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(
-                color: Colors.cyan.withOpacity(0.35),
-                width: 1.5,
+    return BlocListener<HomeBloc, HomeState>(
+      listener: (context, state) {
+        if (state.searchQuery.isEmpty) {
+          controller.clear();
+        }
+      },
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 52,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(
+                  color: Colors.cyan.withOpacity(0.35),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.search, color: Colors.cyan),
+                  const SizedBox(width: 8),
+
+                  /// 🔍 INPUT
+                  Expanded(
+                    child: TextField(
+                      controller: controller,
+                      decoration: const InputDecoration(
+                        hintText: 'Search premium tech...',
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                      onChanged: (q) => context
+                          .read<HomeBloc>()
+                          .add(SearchQueryChanged(q)),
+                    ),
+                  ),
+
+                  /// ❌ CLEAR
+                  BlocBuilder<HomeBloc, HomeState>(
+                    builder: (context, state) {
+                      if (state.searchQuery.isEmpty) {
+                        return const SizedBox();
+                      }
+                      return GestureDetector(
+                        onTap: () {
+                          context.read<HomeBloc>().add(ClearSearch());
+                        },
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.search, color: Colors.cyan),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Search premium tech...',
-                      border: InputBorder.none,
-                      isDense: true,
-                    ),
-                    onChanged: (q) => context.read<HomeBloc>().add(SearchQueryChanged(q)),
-                    onSubmitted: (q) => context.read<HomeBloc>().add(SearchSubmitted(q)),
-                  ),
-                ),
-              ],
+          ),
+
+          const SizedBox(width: 12),
+
+          Container(
+            height: 52,
+            width: 52,
+            decoration: const BoxDecoration(
+              color: Colors.cyan,
+              shape: BoxShape.circle,
             ),
+            child: const Icon(Icons.mic, color: Colors.white),
           ),
-        ),
-        const SizedBox(width: 12),
-        Container(
-          height: 52,
-          width: 52,
-          decoration: const BoxDecoration(
-            color: Colors.cyan,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.mic, color: Colors.white),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
+
 
 
 List<Map<String, String>> _buildCategoryItems(HomeState state) {

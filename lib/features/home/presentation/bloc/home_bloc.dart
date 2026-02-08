@@ -18,6 +18,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<RemoveFromCart>(_removeFromCart);
     on<LoadCart>(_loadCart);
     on<LoadWishlistProducts>(_loadWishlistProducts);
+    on<ClearSearch>(_clearSearch);
+
   }
 
   Future<void> _loadHome(LoadHome event, Emitter<HomeState> emit) async {
@@ -49,18 +51,46 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(state.copyWith(loading: false, products: products));
   }
 
-  Future<void> _searchSuggestions(SearchQueryChanged event, Emitter<HomeState> emit) async {
-    if (event.query.trim().isEmpty) {
-      emit(state.copyWith(suggestions: []));
+  Future<void> _searchSuggestions(
+      SearchQueryChanged event,
+      Emitter<HomeState> emit,
+      ) async {
+    final query = event.query.trim();
+
+    emit(state.copyWith(
+      searchQuery: query,
+      isSearching: query.isNotEmpty,
+    ));
+
+    // ❌ cleared search
+    if (query.isEmpty) {
+      final products = await repo.getHomeProducts();
+      emit(state.copyWith(
+        products: products,
+        suggestions: [],
+        isSearching: false,
+      ));
       return;
     }
-    if (event.query.length < 2) {
-      emit(state.copyWith(suggestions: []));
-      return;
+
+    // optional: fetch suggestions
+    if (query.length >= 2) {
+      final suggestions = await repo.getSearchSuggestions(query);
+      emit(state.copyWith(suggestions: suggestions));
     }
-    final suggestions = await repo.getSearchSuggestions(event.query);
-    emit(state.copyWith(suggestions: suggestions));
+
+    // 🔍 LIVE SEARCH
+    final products = await repo.searchProducts(
+      query,
+      category: state.selectedCategory.isEmpty ? null : state.selectedCategory,
+      minPrice: state.minPrice,
+      maxPrice: state.maxPrice,
+      sort: state.sort.isEmpty ? null : state.sort,
+    );
+
+    emit(state.copyWith(products: products));
   }
+
 
   Future<void> _searchProducts(SearchSubmitted event, Emitter<HomeState> emit) async {
     emit(state.copyWith(loading: true));
@@ -78,7 +108,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final nextCategory = event.clear ? '' : event.category;
     final nextMin = event.clear ? null : event.minPrice;
     final nextMax = event.clear ? null : event.maxPrice;
-    final nextRating = event.clear ? 0 : (event.minRating ?? state.minRating);
+    final nextRating = event.clear ? 0.0 : (event.minRating ?? state.minRating);
     final nextSort = event.clear ? '' : event.sort;
 
     emit(state.copyWith(
@@ -142,4 +172,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final items = await repo.getWishlistProducts();
     emit(state.copyWith(wishlistProducts: items));
   }
+
+  Future<void> _clearSearch(
+      ClearSearch event,
+      Emitter<HomeState> emit,
+      ) async {
+    final products = await repo.getHomeProducts();
+    emit(state.copyWith(
+      searchQuery: '',
+      products: products,
+      suggestions: [],
+      isSearching: false,
+    ));
+  }
+
 }

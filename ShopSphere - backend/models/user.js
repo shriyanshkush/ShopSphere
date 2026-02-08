@@ -1,6 +1,20 @@
 const mongoose = require("mongoose");
 const { productSchema } = require("./product");
 
+const addressSchema = mongoose.Schema(
+  {
+    label: { type: String, default: 'Home', trim: true },
+    fullName: { type: String, required: true, trim: true },
+    line1: { type: String, required: true, trim: true },
+    city: { type: String, required: true, trim: true },
+    state: { type: String, required: true, trim: true },
+    zipCode: { type: String, required: true, trim: true },
+    phone: { type: String, required: true, trim: true },
+    isDefault: { type: Boolean, default: false }
+  },
+  { _id: true }
+);
+
 const userSchema = mongoose.Schema({
     name: {
         type: String,
@@ -30,6 +44,14 @@ const userSchema = mongoose.Schema({
         type: String,
         default: '',
     },
+    addresses: {
+        type: [addressSchema],
+        default: [],
+    },
+    selectedAddressId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    },
     type: {
         type: String,
         default: 'user',
@@ -49,9 +71,9 @@ const userSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
     }]
-}, { 
+}, {
     timestamps: true,
-    versionKey: false 
+    versionKey: false
 });
 
 // Index for faster queries

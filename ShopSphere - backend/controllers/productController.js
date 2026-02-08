@@ -4,6 +4,43 @@ const { SORT_OPTIONS } = require("../src/config/constants");
 const Review = require("../models/review");
 
 class ProductController {
+    async getCategories(req, res) {
+        try {
+            const categories = await Product.distinct('category');
+            res.json({ categories: categories.filter(Boolean) });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
+    async getProductsByCategory(req, res) {
+        try {
+            const { category } = req.params;
+            const { page, limit, skip } = req.pagination;
+            const query = { category };
+
+            const products = await Product.find(query)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+
+            const total = await Product.countDocuments(query);
+
+            res.json({
+                category,
+                products,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    pages: Math.ceil(total / limit)
+                }
+            });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
     async getProducts(req, res) {
         try {
             const { category, minPrice, maxPrice, minRating, sort } = req.query;

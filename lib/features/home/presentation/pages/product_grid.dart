@@ -6,7 +6,7 @@ class ProductGrid extends StatelessWidget {
   final List<ProductModel> products;
   final Set<String> wishlist;
   final void Function(String productId) onWishlistTap;
-  final VoidCallback onAddToCart;
+  final void Function(String productId) onAddToCart;
   final void Function(String productId) onProductTap;
 
   const ProductGrid({
@@ -38,7 +38,7 @@ class ProductGrid extends StatelessWidget {
             product: product,
             isWishlisted: wishlist.contains(product.id),
             onWishlistTap: () => onWishlistTap(product.id),
-            onAddToCart: onAddToCart,
+            onAddToCart: () => onAddToCart(product.id),
           ),
         );
       },

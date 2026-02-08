@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:shopsphere/core/constants/Routes.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CheckoutPaymentPage extends StatefulWidget {
   const CheckoutPaymentPage({super.key});
@@ -51,8 +52,8 @@ class _CheckoutPaymentPageState extends State<CheckoutPaymentPage> {
 
   void _startPayment() {
     final options = {
-      'key': 'rzp_test_1234567890',
-      'amount': 19900,
+      'key': dotenv.env['RAZORPAY_KEY_ID'],
+      'amount': 100,
       'name': 'ShopSphere',
       'description': 'Order Payment',
       'prefill': {

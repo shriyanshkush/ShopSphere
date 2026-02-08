@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import '../../data/models/product_model.dart';
 
+const _unset = Object();
+
 class HomeState extends Equatable {
   final bool loading;
   final List<ProductModel> products;
@@ -14,8 +16,8 @@ class HomeState extends Equatable {
   final List<String> categories;
   final String selectedCategory;
 
-  final double minPrice;
-  final double maxPrice;
+  final double? minPrice;
+  final double? maxPrice;
   final double minRating;
   final String sort;
 
@@ -48,8 +50,8 @@ class HomeState extends Equatable {
       cartTotal: 0,
       categories: [],
       selectedCategory: '',
-      minPrice: 120,
-      maxPrice: 850,
+      minPrice: null,
+      maxPrice: null,
       minRating: 0,
       sort: '',
     );
@@ -66,8 +68,8 @@ class HomeState extends Equatable {
     double? cartTotal,
     List<String>? categories,
     String? selectedCategory,
-    double? minPrice,
-    double? maxPrice,
+    Object? minPrice = _unset,
+    Object? maxPrice = _unset,
     double? minRating,
     String? sort,
   }) {
@@ -82,8 +84,8 @@ class HomeState extends Equatable {
       cartTotal: cartTotal ?? this.cartTotal,
       categories: categories ?? this.categories,
       selectedCategory: selectedCategory ?? this.selectedCategory,
-      minPrice: minPrice ?? this.minPrice,
-      maxPrice: maxPrice ?? this.maxPrice,
+      minPrice: minPrice == _unset ? this.minPrice : minPrice as double?,
+      maxPrice: maxPrice == _unset ? this.maxPrice : maxPrice as double?,
       minRating: minRating ?? this.minRating,
       sort: sort ?? this.sort,
     );

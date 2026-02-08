@@ -75,11 +75,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _applyFilters(ApplyFilters event, Emitter<HomeState> emit) async {
-    final nextCategory = event.category ?? state.selectedCategory;
-    final nextMin = event.minPrice ?? state.minPrice;
-    final nextMax = event.maxPrice ?? state.maxPrice;
-    final nextRating = event.minRating ?? state.minRating;
-    final nextSort = event.sort ?? state.sort;
+    final nextCategory = event.clear ? '' : event.category;
+    final nextMin = event.clear ? null : event.minPrice;
+    final nextMax = event.clear ? null : event.maxPrice;
+    final nextRating = event.clear ? 0 : (event.minRating ?? state.minRating);
+    final nextSort = event.clear ? '' : event.sort;
 
     emit(state.copyWith(
       loading: true,

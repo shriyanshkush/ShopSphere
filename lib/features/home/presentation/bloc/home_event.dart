@@ -23,18 +23,20 @@ class SearchSubmitted extends HomeEvent {
 }
 
 class ApplyFilters extends HomeEvent {
-  final String? category;
+  final String category;
   final double? minPrice;
   final double? maxPrice;
   final double? minRating;
-  final String? sort;
+  final String sort;
+  final bool clear;
 
   ApplyFilters({
-    this.category,
+    this.category = '',
     this.minPrice,
     this.maxPrice,
     this.minRating,
-    this.sort,
+    this.sort = '',
+    this.clear = false,
   });
 }
 

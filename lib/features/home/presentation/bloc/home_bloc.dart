@@ -71,7 +71,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       maxPrice: state.maxPrice,
       sort: state.sort.isEmpty ? null : state.sort,
     );
-    emit(state.copyWith(loading: false, products: products, suggestions: []));
+    emit(state.copyWith(
+      loading: false,
+      products: products,
+      suggestions: [],
+      lastQuery: event.query,
+    ));
   }
 
   Future<void> _applyFilters(ApplyFilters event, Emitter<HomeState> emit) async {
@@ -90,20 +95,29 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       sort: nextSort,
     ));
 
-    final products = await repo.getFilteredProducts(
-      category: nextCategory.isEmpty ? null : nextCategory,
-      minPrice: nextMin,
-      maxPrice: nextMax,
-      minRating: nextRating,
-      sort: nextSort.isEmpty ? null : nextSort,
-    );
+    final products = state.lastQuery.trim().isNotEmpty
+        ? await repo.searchProducts(
+            state.lastQuery,
+            category: nextCategory.isEmpty ? null : nextCategory,
+            minPrice: nextMin,
+            maxPrice: nextMax,
+            sort: nextSort.isEmpty ? null : nextSort,
+          )
+        : await repo.getFilteredProducts(
+            category: nextCategory.isEmpty ? null : nextCategory,
+            minPrice: nextMin,
+            maxPrice: nextMax,
+            minRating: nextRating,
+            sort: nextSort.isEmpty ? null : nextSort,
+          );
 
     emit(state.copyWith(loading: false, products: products));
   }
 
   Future<void> _toggleWishlist(ToggleWishlist event, Emitter<HomeState> emit) async {
     final isWishlisted = state.wishlist.contains(event.productId);
-    final updated = Set<String>.from(state.wishlist);
+    final previous = state.wishlist;
+    final updated = Set<String>.from(previous);
     if (isWishlisted) {
       updated.remove(event.productId);
     } else {
@@ -114,7 +128,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       await repo.toggleWishlist(event.productId, !isWishlisted);
       add(LoadWishlistProducts());
     } catch (_) {
-      emit(state.copyWith(wishlist: state.wishlist));
+      emit(state.copyWith(wishlist: previous));
     }
   }
 
@@ -140,6 +154,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<void> _loadWishlistProducts(LoadWishlistProducts event, Emitter<HomeState> emit) async {
     final items = await repo.getWishlistProducts();
-    emit(state.copyWith(wishlistProducts: items));
+    emit(state.copyWith(
+      wishlistProducts: items,
+      wishlist: items.map((item) => item.id).toSet(),
+    ));
   }
 }

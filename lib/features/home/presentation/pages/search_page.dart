@@ -23,6 +23,7 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HomeBloc>().add(LoadCategories());
+      context.read<HomeBloc>().add(LoadWishlistProducts());
       context.read<HomeBloc>().add(SearchSubmitted(_controller.text));
     });
   }
@@ -279,6 +280,8 @@ class _SearchPageState extends State<SearchPage> {
                               arguments: product.id,
                             ),
                             onAddToCart: () => context.read<HomeBloc>().add(AddToCart(product.id)),
+                            onWishlistTap: () => context.read<HomeBloc>().add(ToggleWishlist(product.id)),
+                            isWishlisted: state.wishlist.contains(product.id),
                             image: product.images.isNotEmpty ? product.images.first : '',
                             title: product.name,
                             rating: product.rating,
@@ -450,6 +453,8 @@ class _SuggestionList extends StatelessWidget {
 class _SearchCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onAddToCart;
+  final VoidCallback onWishlistTap;
+  final bool isWishlisted;
   final String image;
   final String title;
   final double rating;
@@ -459,6 +464,8 @@ class _SearchCard extends StatelessWidget {
   const _SearchCard({
     required this.onTap,
     required this.onAddToCart,
+    required this.onWishlistTap,
+    required this.isWishlisted,
     required this.image,
     required this.title,
     required this.rating,
@@ -478,13 +485,33 @@ class _SearchCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (image.isNotEmpty)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(image, height: 130, width: double.infinity, fit: BoxFit.cover),
-                )
-              else
-                Container(height: 130, color: Colors.grey.shade200),
+              Stack(
+                children: [
+                  if (image.isNotEmpty)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(image, height: 130, width: double.infinity, fit: BoxFit.cover),
+                    )
+                  else
+                    Container(height: 130, color: Colors.grey.shade200),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: onWishlistTap,
+                      child: CircleAvatar(
+                        radius: 14,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          isWishlisted ? Icons.favorite : Icons.favorite_border,
+                          color: Colors.red,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 10),
               Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),

@@ -75,5 +75,8 @@ class HomeRepositoryImpl implements HomeRepository {
   Future<void> addToCart(String productId) => remote.addToCart(productId);
 
   @override
+  Future<void> removeFromCart(String productId) => remote.removeFromCart(productId);
+
+  @override
   Future<Map<String, dynamic>> getCart() => remote.getCart();
 }

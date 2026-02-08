@@ -1,11 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:shopsphere/core/constants/Routes.dart';
+import 'package:shopsphere/features/checkout/data/datasources/checkout_remote_data_source.dart';
+import 'package:shopsphere/features/checkout/data/repositories/checkout_repository_impl.dart';
+import 'package:shopsphere/features/checkout/presentation/models/checkout_flow_args.dart';
 
-class CheckoutReviewPage extends StatelessWidget {
-  const CheckoutReviewPage({super.key});
+class CheckoutReviewPage extends StatefulWidget {
+  final CheckoutReviewArgs? args;
+  const CheckoutReviewPage({super.key, this.args});
+
+  @override
+  State<CheckoutReviewPage> createState() => _CheckoutReviewPageState();
+}
+
+class _CheckoutReviewPageState extends State<CheckoutReviewPage> {
+  bool _loading = true;
+  bool _submitting = false;
+  List<dynamic> _cartItems = [];
+  double _cartTotal = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCart();
+  }
+
+  Future<void> _loadCart() async {
+    try {
+      final repo = CheckoutRepositoryImpl(CheckoutRemoteDataSource());
+      final cart = await repo.fetchCart();
+      setState(() {
+        _cartItems = (cart['items'] as List? ?? []);
+        _cartTotal = (cart['totalAmount'] as num?)?.toDouble() ?? 0;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to load cart summary')),
+      );
+    }
+  }
+
+  Future<void> _placeOrder() async {
+    final args = widget.args;
+    if (args == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Missing checkout details.')),
+      );
+      return;
+    }
+    if (_cartItems.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Your cart is empty.')),
+      );
+      return;
+    }
+    setState(() => _submitting = true);
+    try {
+      final repo = CheckoutRepositoryImpl(CheckoutRemoteDataSource());
+      await repo.placeOrder(
+        cart: _cartItems,
+        totalPrice: _cartTotal,
+        address: '${args.address.fullName} • ${args.address.fullAddress}',
+        payment: args.payment.toJson(),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Order placed successfully!')),
+      );
+      Navigator.pushNamedAndRemoveUntil(context, Routes.home, (_) => false);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to place order.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final args = widget.args;
+    final paymentLabel = args == null
+        ? 'Payment method'
+        : args.payment.method == 'cod'
+            ? 'Cash on Delivery'
+            : 'Razorpay Checkout';
+    final itemCount = _cartItems.fold<int>(0, (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 0));
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Review', style: TextStyle(fontWeight: FontWeight.w700)),
@@ -37,41 +123,45 @@ class CheckoutReviewPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                _SummaryCard(
-                  title: 'Delivery Address',
-                  subtitle: 'Jane Doe • 123 Maple St, Springfield, IL',
-                  icon: Icons.location_on_outlined,
-                ),
-                const SizedBox(height: 12),
-                _SummaryCard(
-                  title: 'Payment',
-                  subtitle: 'Razorpay Checkout',
-                  icon: Icons.credit_card,
-                ),
-                const SizedBox(height: 12),
-                _SummaryCard(
-                  title: 'Order Summary',
-                  subtitle: '3 items • Total: \$787.00',
-                  icon: Icons.shopping_bag_outlined,
-                ),
-              ],
-            ),
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                      _SummaryCard(
+                        title: 'Delivery Address',
+                        subtitle: args == null ? '—' : '${args.address.fullName} • ${args.address.fullAddress}',
+                        icon: Icons.location_on_outlined,
+                      ),
+                      const SizedBox(height: 12),
+                      _SummaryCard(
+                        title: 'Payment',
+                        subtitle: paymentLabel,
+                        icon: Icons.credit_card,
+                      ),
+                      const SizedBox(height: 12),
+                      _SummaryCard(
+                        title: 'Order Summary',
+                        subtitle: '$itemCount items • Total: ₹${_cartTotal.toStringAsFixed(2)}',
+                        icon: Icons.shopping_bag_outlined,
+                      ),
+                    ],
+                  ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Navigator.pushNamedAndRemoveUntil(context, Routes.home, (_) => false),
+                onPressed: _submitting ? null : _placeOrder,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: Colors.cyan,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('Place Order', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                child: _submitting
+                    ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Place Order', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
               ),
             ),
           ),

@@ -12,4 +12,11 @@ abstract class CheckoutRepository {
     required String phone,
   });
   Future<(List<AddressModel>, String?)> selectAddress(String id);
+  Future<Map<String, dynamic>> fetchCart();
+  Future<Map<String, dynamic>> placeOrder({
+    required List<dynamic> cart,
+    required double totalPrice,
+    required String address,
+    required Map<String, dynamic> payment,
+  });
 }

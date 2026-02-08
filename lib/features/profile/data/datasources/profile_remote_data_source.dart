@@ -7,7 +7,7 @@ class ProfileRemoteDataSource {
 
   Future<List<RecentOrderModel>> getRecentOrders() async {
     try {
-      final res = await dio.get('/api/orders/recent');
+      final res = await dio.get('/api/orders/me', queryParameters: {'limit': 100});
       final items = (res.data['orders'] as List? ?? []);
       return items.map((e) => RecentOrderModel.fromJson(e)).toList();
     } catch (_) {

@@ -18,6 +18,30 @@ class RecentOrderModel {
   });
 
   factory RecentOrderModel.fromJson(Map<String, dynamic> json) {
+    if (json.containsKey('products')) {
+      final products = (json['products'] as List? ?? []);
+      final firstItem = products.isNotEmpty ? products.first as Map<String, dynamic> : {};
+      final product = (firstItem['product'] as Map<String, dynamic>? ?? {});
+      final images = (product['images'] as List? ?? []);
+      final statusCode = (json['status'] as num?)?.toInt() ?? 0;
+      final statusMap = {
+        0: 'Pending',
+        1: 'Confirmed',
+        2: 'Packed',
+        3: 'Shipped',
+        4: 'Delivered',
+        5: 'Cancelled',
+      };
+      return RecentOrderModel(
+        id: json['_id']?.toString() ?? '',
+        productId: product['_id']?.toString() ?? '',
+        title: product['name']?.toString() ?? 'Order item',
+        status: statusMap[statusCode] ?? 'Pending',
+        image: images.isNotEmpty ? images.first.toString() : '',
+        canTrack: statusCode > 0 && statusCode < 4,
+        canReview: statusCode == 4,
+      );
+    }
     return RecentOrderModel(
       id: json['_id']?.toString() ?? '',
       productId: json['productId']?.toString() ?? '',

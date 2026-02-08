@@ -33,4 +33,22 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
 
   @override
   Future<(List<AddressModel>, String?)> selectAddress(String id) => remote.selectAddress(id);
+
+  @override
+  Future<Map<String, dynamic>> fetchCart() => remote.fetchCart();
+
+  @override
+  Future<Map<String, dynamic>> placeOrder({
+    required List<dynamic> cart,
+    required double totalPrice,
+    required String address,
+    required Map<String, dynamic> payment,
+  }) {
+    return remote.placeOrder(
+      cart: cart,
+      totalPrice: totalPrice,
+      address: address,
+      payment: payment,
+    );
+  }
 }

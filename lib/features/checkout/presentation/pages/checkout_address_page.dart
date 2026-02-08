@@ -7,6 +7,7 @@ import 'package:shopsphere/features/checkout/data/repositories/checkout_reposito
 import 'package:shopsphere/features/checkout/presentation/bloc/checkout_bloc.dart';
 import 'package:shopsphere/features/checkout/presentation/bloc/checkout_event.dart';
 import 'package:shopsphere/features/checkout/presentation/bloc/checkout_state.dart';
+import 'package:shopsphere/features/checkout/presentation/models/checkout_flow_args.dart';
 
 class CheckoutAddressPage extends StatelessWidget {
   const CheckoutAddressPage({super.key});
@@ -151,7 +152,11 @@ class _CheckoutAddressView extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: selectedAddress == null
                             ? null
-                            : () => Navigator.pushNamed(context, Routes.checkoutPayment),
+                            : () => Navigator.pushNamed(
+                                  context,
+                                  Routes.checkoutPayment,
+                                  arguments: CheckoutPaymentArgs(address: selectedAddress),
+                                ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           backgroundColor: Colors.cyan,

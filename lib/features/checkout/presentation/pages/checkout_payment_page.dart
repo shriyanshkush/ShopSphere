@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:shopsphere/core/constants/Routes.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shopsphere/features/checkout/data/datasources/checkout_remote_data_source.dart';
+import 'package:shopsphere/features/checkout/data/models/payment_details.dart';
+import 'package:shopsphere/features/checkout/data/repositories/checkout_repository_impl.dart';
+import 'package:shopsphere/features/checkout/presentation/models/checkout_flow_args.dart';
 
 class CheckoutPaymentPage extends StatefulWidget {
-  const CheckoutPaymentPage({super.key});
+  final CheckoutPaymentArgs? args;
+  const CheckoutPaymentPage({super.key, this.args});
 
   @override
   State<CheckoutPaymentPage> createState() => _CheckoutPaymentPageState();
@@ -12,6 +17,8 @@ class CheckoutPaymentPage extends StatefulWidget {
 
 class _CheckoutPaymentPageState extends State<CheckoutPaymentPage> {
   late Razorpay _razorpay;
+  double _cartTotal = 0;
+  bool _loading = true;
 
   @override
   void initState() {
@@ -20,6 +27,7 @@ class _CheckoutPaymentPageState extends State<CheckoutPaymentPage> {
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+    _loadCart();
   }
 
   @override
@@ -33,7 +41,28 @@ class _CheckoutPaymentPageState extends State<CheckoutPaymentPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Payment successful!')),
     );
-    Navigator.pushNamed(context, Routes.checkoutReview);
+    if (widget.args == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Missing checkout address.')),
+      );
+      return;
+    }
+    final payment = PaymentDetails(
+      method: 'razorpay',
+      status: 'paid',
+      provider: 'razorpay',
+      paymentId: response.paymentId,
+      orderId: response.orderId,
+      signature: response.signature,
+      amount: _cartTotal,
+      currency: 'INR',
+      paidAt: DateTime.now(),
+    );
+    Navigator.pushNamed(
+      context,
+      Routes.checkoutReview,
+      arguments: CheckoutReviewArgs(address: widget.args!.address, payment: payment),
+    );
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
@@ -50,10 +79,33 @@ class _CheckoutPaymentPageState extends State<CheckoutPaymentPage> {
     );
   }
 
+  Future<void> _loadCart() async {
+    try {
+      final repo = CheckoutRepositoryImpl(CheckoutRemoteDataSource());
+      final cart = await repo.fetchCart();
+      setState(() {
+        _cartTotal = (cart['totalAmount'] as num?)?.toDouble() ?? 0;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to load cart total')),
+      );
+    }
+  }
+
   void _startPayment() {
+    if (_cartTotal <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Your cart is empty.')),
+      );
+      return;
+    }
     final options = {
       'key': dotenv.env['RAZORPAY_KEY_ID'],
-      'amount': 100,
+      'amount': (_cartTotal * 100).round(),
       'name': 'ShopSphere',
       'description': 'Order Payment',
       'prefill': {
@@ -67,6 +119,7 @@ class _CheckoutPaymentPageState extends State<CheckoutPaymentPage> {
 
   @override
   Widget build(BuildContext context) {
+    final address = widget.args?.address;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Payment', style: TextStyle(fontWeight: FontWeight.w700)),
@@ -98,24 +151,49 @@ class _CheckoutPaymentPageState extends State<CheckoutPaymentPage> {
           ),
           const SizedBox(height: 12),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                _PaymentOption(
-                  title: 'Razorpay Checkout',
-                  subtitle: 'Cards, UPI, Netbanking, and Wallets',
-                  icon: Icons.lock_outline,
-                  onTap: _startPayment,
-                ),
-                const SizedBox(height: 12),
-                _PaymentOption(
-                  title: 'Cash on Delivery',
-                  subtitle: 'Pay when your order arrives',
-                  icon: Icons.payments_outlined,
-                  onTap: () => Navigator.pushNamed(context, Routes.checkoutReview),
-                ),
-              ],
-            ),
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                      if (address != null) _AddressBanner(address: address.fullAddress),
+                      if (address != null) const SizedBox(height: 12),
+                      _PaymentOption(
+                        title: 'Razorpay Checkout',
+                        subtitle: 'Cards, UPI, Netbanking, and Wallets',
+                        icon: Icons.lock_outline,
+                        onTap: address == null ? () {} : _startPayment,
+                      ),
+                      const SizedBox(height: 12),
+                      _PaymentOption(
+                        title: 'Cash on Delivery',
+                        subtitle: 'Pay when your order arrives',
+                        icon: Icons.payments_outlined,
+                        onTap: address == null
+                            ? () {}
+                            : () {
+                                if (_cartTotal <= 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Your cart is empty.')),
+                                  );
+                                  return;
+                                }
+                                final payment = PaymentDetails(
+                                  method: 'cod',
+                                  status: 'pending',
+                                  provider: 'offline',
+                                  amount: _cartTotal,
+                                  currency: 'INR',
+                                );
+                                Navigator.pushNamed(
+                                  context,
+                                  Routes.checkoutReview,
+                                  arguments: CheckoutReviewArgs(address: address, payment: payment),
+                                );
+                              },
+                      ),
+                    ],
+                  ),
           ),
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -123,6 +201,34 @@ class _CheckoutPaymentPageState extends State<CheckoutPaymentPage> {
               'By proceeding, you agree to the Razorpay payment terms.',
               style: TextStyle(color: Color(0xFF77839A)),
               textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AddressBanner extends StatelessWidget {
+  final String address;
+  const _AddressBanner({required this.address});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE6F7F8),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.location_on_outlined, color: Colors.cyan),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              address,
+              style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2C3852)),
             ),
           ),
         ],

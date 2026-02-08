@@ -15,6 +15,40 @@ const orderSchema = mongoose.Schema({
         required: true,
         min: 0
     },
+    payment: {
+        method: {
+            type: String,
+            default: 'COD'
+        },
+        status: {
+            type: String,
+            default: 'pending'
+        },
+        provider: {
+            type: String,
+            default: 'offline'
+        },
+        paymentId: {
+            type: String
+        },
+        orderId: {
+            type: String
+        },
+        signature: {
+            type: String
+        },
+        amount: {
+            type: Number,
+            min: 0
+        },
+        currency: {
+            type: String,
+            default: 'INR'
+        },
+        paidAt: {
+            type: Date
+        }
+    },
     address: {
         type: String,
         required: true,

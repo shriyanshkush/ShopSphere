@@ -223,7 +223,7 @@ class UserController {
 
     async placeOrder(req, res) {
         try {
-            const { cart, totalPrice, address } = req.body;
+            const { cart, totalPrice, address, payment } = req.body;
             let products = [];
 
             for (let item of cart) {
@@ -252,6 +252,17 @@ class UserController {
                 products,
                 totalPrice,
                 address,
+                payment: {
+                    method: payment?.method || 'COD',
+                    status: payment?.status || 'pending',
+                    provider: payment?.provider || 'offline',
+                    paymentId: payment?.paymentId,
+                    orderId: payment?.orderId,
+                    signature: payment?.signature,
+                    amount: payment?.amount || totalPrice,
+                    currency: payment?.currency || 'INR',
+                    paidAt: payment?.paidAt ? new Date(payment.paidAt) : (payment?.status === 'paid' ? new Date() : undefined),
+                },
                 userId: req.user,
                 orderedAt: new Date().getTime(),
                 statusHistory: [{

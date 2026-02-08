@@ -45,4 +45,24 @@ class CheckoutRemoteDataSource {
         .toList();
     return (addresses, res.data['selectedAddressId']?.toString());
   }
+
+  Future<Map<String, dynamic>> fetchCart() async {
+    final res = await dio.get('/api/cart');
+    return res.data;
+  }
+
+  Future<Map<String, dynamic>> placeOrder({
+    required List<dynamic> cart,
+    required double totalPrice,
+    required String address,
+    required Map<String, dynamic> payment,
+  }) async {
+    final res = await dio.post('/api/order', data: {
+      'cart': cart,
+      'totalPrice': totalPrice,
+      'address': address,
+      'payment': payment,
+    });
+    return res.data as Map<String, dynamic>;
+  }
 }

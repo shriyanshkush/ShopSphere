@@ -44,7 +44,10 @@ class ProductDetailPage extends StatelessWidget {
                 const SnackBar(content: Text('Added to cart')),
               );
             },
-            onBuyNow: () => Navigator.pushNamed(context, Routes.checkoutAddress),
+            onBuyNow: () {
+              context.read<ProductDetailBloc>().add(AddToCart());
+              Navigator.pushNamed(context, Routes.checkoutAddress);
+            },
           ),
           body: SafeArea(
             child: SingleChildScrollView(

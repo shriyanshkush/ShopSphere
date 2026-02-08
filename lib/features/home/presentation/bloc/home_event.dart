@@ -48,5 +48,10 @@ class AddToCart extends HomeEvent {
   AddToCart(this.productId);
 }
 
+class RemoveFromCart extends HomeEvent {
+  final String productId;
+  RemoveFromCart(this.productId);
+}
+
 class LoadCart extends HomeEvent {}
 class LoadWishlistProducts extends HomeEvent {}

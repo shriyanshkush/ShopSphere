@@ -15,6 +15,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<ApplyFilters>(_applyFilters);
     on<ToggleWishlist>(_toggleWishlist);
     on<AddToCart>(_addToCart);
+    on<RemoveFromCart>(_removeFromCart);
     on<LoadCart>(_loadCart);
     on<LoadWishlistProducts>(_loadWishlistProducts);
   }
@@ -119,6 +120,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<void> _addToCart(AddToCart event, Emitter<HomeState> emit) async {
     await repo.addToCart(event.productId);
+    add(LoadCart());
+  }
+
+  Future<void> _removeFromCart(RemoveFromCart event, Emitter<HomeState> emit) async {
+    await repo.removeFromCart(event.productId);
     add(LoadCart());
   }
 

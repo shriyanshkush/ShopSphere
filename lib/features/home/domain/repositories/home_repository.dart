@@ -29,5 +29,6 @@ abstract class HomeRepository {
   Future<List<ProductModel>> getWishlistProducts();
 
   Future<void> addToCart(String productId);
+  Future<void> removeFromCart(String productId);
   Future<Map<String, dynamic>> getCart();
 }

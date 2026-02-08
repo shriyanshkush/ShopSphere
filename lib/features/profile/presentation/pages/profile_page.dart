@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shopsphere/core/constants/Routes.dart';
-import 'package:shopsphere/features/checkout/presentation/pages/checkout_address_page.dart';
 import 'package:shopsphere/features/profile/data/datasources/profile_remote_data_source.dart';
 import 'package:shopsphere/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:shopsphere/features/profile/presentation/bloc/profile_bloc.dart';
@@ -60,10 +59,7 @@ class ProfilePage extends StatelessWidget {
                             child: _QuickCard(
                               'Your Orders',
                               Icons.shopping_bag_outlined,
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const CheckoutAddressPage()),
-                              ),
+                              onTap: () => context.read<ProfileBloc>().add(LoadProfile()),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -86,8 +82,8 @@ class ProfilePage extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Recent Orders', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                          TextButton(onPressed: () {}, child: const Text('See all', style: TextStyle(color: Colors.cyan, fontWeight: FontWeight.w700))),
+                          const Text('Your Orders', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                          Text('${state.orders.length} total', style: const TextStyle(color: Color(0xFF7C8AA5), fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),

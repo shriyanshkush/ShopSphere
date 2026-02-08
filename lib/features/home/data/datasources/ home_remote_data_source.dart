@@ -110,6 +110,10 @@ class HomeRemoteDataSource {
     await dio.post('/api/add-to-cart', data: {'id': productId});
   }
 
+  Future<void> removeFromCart(String productId) async {
+    await dio.delete('/api/remove-from-cart/$productId');
+  }
+
   Future<Map<String, dynamic>> getCart() async {
     final res = await dio.get('/api/cart');
     return res.data;

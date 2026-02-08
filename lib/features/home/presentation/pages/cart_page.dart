@@ -44,12 +44,19 @@ class _CartPageState extends State<CartPage> {
                           final item = raw as Map<String, dynamic>;
                           final product = item['product'] as Map<String, dynamic>? ?? {};
                           final images = (product['images'] as List? ?? []);
+                          final productId = product['_id']?.toString() ?? '';
                           return _CartItemCard(
                             title: product['name']?.toString() ?? 'Product',
                             subtitle: product['brand']?.toString() ?? (product['category']?.toString() ?? 'In stock'),
                             price: (product['price'] as num?)?.toDouble() ?? 0,
                             quantity: (item['quantity'] as num?)?.toInt() ?? 1,
                             imageUrl: images.isNotEmpty ? images.first.toString() : '',
+                            onAdd: productId.isEmpty
+                                ? null
+                                : () => context.read<HomeBloc>().add(AddToCart(productId)),
+                            onRemove: productId.isEmpty
+                                ? null
+                                : () => context.read<HomeBloc>().add(RemoveFromCart(productId)),
                           );
                         },
                       ).toList(),
@@ -119,6 +126,8 @@ class _CartItemCard extends StatelessWidget {
   final double price;
   final int quantity;
   final String imageUrl;
+  final VoidCallback? onAdd;
+  final VoidCallback? onRemove;
 
   const _CartItemCard({
     required this.title,
@@ -126,6 +135,8 @@ class _CartItemCard extends StatelessWidget {
     required this.price,
     required this.quantity,
     required this.imageUrl,
+    this.onAdd,
+    this.onRemove,
   });
 
   @override
@@ -161,7 +172,7 @@ class _CartItemCard extends StatelessWidget {
               ],
             ),
           ),
-          _QuantityControl(quantity: quantity),
+          _QuantityControl(quantity: quantity, onAdd: onAdd, onRemove: onRemove),
         ],
       ),
     );
@@ -170,7 +181,9 @@ class _CartItemCard extends StatelessWidget {
 
 class _QuantityControl extends StatelessWidget {
   final int quantity;
-  const _QuantityControl({required this.quantity});
+  final VoidCallback? onAdd;
+  final VoidCallback? onRemove;
+  const _QuantityControl({required this.quantity, this.onAdd, this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -182,12 +195,12 @@ class _QuantityControl extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _QtyButton(icon: Icons.remove),
+          _QtyButton(icon: Icons.remove, onTap: onRemove),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text('$quantity', style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
-          _QtyButton(icon: Icons.add),
+          _QtyButton(icon: Icons.add, onTap: onAdd),
         ],
       ),
     );
@@ -196,14 +209,19 @@ class _QuantityControl extends StatelessWidget {
 
 class _QtyButton extends StatelessWidget {
   final IconData icon;
-  const _QtyButton({required this.icon});
+  final VoidCallback? onTap;
+  const _QtyButton({required this.icon, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
       radius: 14,
       backgroundColor: Colors.white,
-      child: Icon(icon, size: 16, color: const Color(0xFF2C3852)),
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        icon: Icon(icon, size: 16, color: const Color(0xFF2C3852)),
+        onPressed: onTap,
+      ),
     );
   }
 }

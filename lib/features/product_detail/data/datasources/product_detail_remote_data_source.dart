@@ -20,8 +20,18 @@ class ProductDetailRemoteDataSource {
         .toList();
   }
 
-  Future<void> toggleWishlist(String productId) async {
-    await dio.post('/api/wishlist/add', data: { 'productId': productId });
+  Future<Set<String>> fetchWishlistIds() async {
+    final res = await dio.get('/api/wishlist');
+    final products = (res.data['products'] as List? ?? []);
+    return products.map((p) => p['productId']['_id'].toString()).toSet();
+  }
+
+  Future<void> toggleWishlist(String productId, bool add) async {
+    if (add) {
+      await dio.post('/api/wishlist/add', data: {'productId': productId});
+    } else {
+      await dio.delete('/api/wishlist/remove/$productId');
+    }
   }
 
   Future<void> addToCart(String productId) async {

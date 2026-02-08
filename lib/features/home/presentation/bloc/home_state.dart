@@ -15,6 +15,7 @@ class HomeState extends Equatable {
 
   final List<String> categories;
   final String selectedCategory;
+  final String lastQuery;
 
   final double? minPrice;
   final double? maxPrice;
@@ -36,6 +37,7 @@ class HomeState extends Equatable {
     required this.cartTotal,
     required this.categories,
     required this.selectedCategory,
+    required this.lastQuery,
     required this.minPrice,
     required this.maxPrice,
     required this.minRating,
@@ -56,6 +58,7 @@ class HomeState extends Equatable {
       cartTotal: 0,
       categories: [],
       selectedCategory: '',
+      lastQuery: '',
       minPrice: null,
       maxPrice: null,
       minRating: 0,
@@ -76,6 +79,7 @@ class HomeState extends Equatable {
     double? cartTotal,
     List<String>? categories,
     String? selectedCategory,
+    String? lastQuery,
     Object? minPrice = _unset,
     Object? maxPrice = _unset,
     double? minRating,
@@ -94,6 +98,7 @@ class HomeState extends Equatable {
       cartTotal: cartTotal ?? this.cartTotal,
       categories: categories ?? this.categories,
       selectedCategory: selectedCategory ?? this.selectedCategory,
+      lastQuery: lastQuery ?? this.lastQuery,
       minPrice: minPrice == _unset ? this.minPrice : minPrice as double?,
       maxPrice: maxPrice == _unset ? this.maxPrice : maxPrice as double?,
       minRating: minRating ?? this.minRating,
@@ -115,6 +120,7 @@ class HomeState extends Equatable {
         cartTotal,
         categories,
         selectedCategory,
+        lastQuery,
         minPrice,
         maxPrice,
         minRating,

@@ -7,5 +7,7 @@ class Routes {
 
   static const admin = '/admin'; // ✅ ADD THIS
   static const productDetail = '/product-detail'; // ✅ ADD
+  static const profile = '/profile';
+  static const orderConfirmed = '/order-confirmed';
 
 }

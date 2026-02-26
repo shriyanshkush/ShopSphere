@@ -12,6 +12,8 @@ class ProductDetailBloc
     on<LoadProductDetail>(_load);
     on<ToggleWishlist>(_wishlist);
     on<AddToCart>(_cart);
+    on<BuyNow>(_buyNow);
+    on<ClearOrderConfirmation>(_clearOrder);
   }
 
   Future<void> _load(
@@ -36,5 +38,14 @@ class ProductDetailBloc
 
   Future<void> _cart(AddToCart e, Emitter<ProductDetailState> emit) async {
     await repo.addToCart(productId);
+  }
+
+  Future<void> _buyNow(BuyNow e, Emitter<ProductDetailState> emit) async {
+    emit(state.copyWith(orderConfirmed: true));
+  }
+
+  Future<void> _clearOrder(
+      ClearOrderConfirmation e, Emitter<ProductDetailState> emit) async {
+    emit(state.copyWith(orderConfirmed: false));
   }
 }

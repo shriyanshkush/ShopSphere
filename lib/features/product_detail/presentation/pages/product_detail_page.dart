@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shopsphere/core/constants/Routes.dart';
 import 'package:shopsphere/features/product_detail/data/models/product_detail_model.dart';
+import 'package:shopsphere/features/product_detail/presentation/pages/order_confirmed_page.dart';
 import 'package:shopsphere/features/product_detail/presentation/pages/review_list_page.dart';
 import 'package:shopsphere/features/product_detail/presentation/pages/write_review_page.dart';
 
@@ -18,7 +20,24 @@ class ProductDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProductDetailBloc, ProductDetailState>(
+    return BlocConsumer<ProductDetailBloc, ProductDetailState>(
+      listener: (context, state) {
+        if (state.orderConfirmed && state.product != null) {
+          final subtotal = state.product!.price;
+          Navigator.pushNamed(
+            context,
+            Routes.orderConfirmed,
+            arguments: OrderConfirmedArgs(
+              orderNumber: '#${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}',
+              estimateDate: 'Oct 24, 2023',
+              subtotal: subtotal,
+              shipping: 5,
+              tax: subtotal * 0.085,
+            ),
+          );
+          context.read<ProductDetailBloc>().add(ClearOrderConfirmation());
+        }
+      },
       builder: (context, state) {
         /// 🔑 Load once
         if (!state.loading && state.product == null) {
@@ -40,6 +59,7 @@ class ProductDetailPage extends StatelessWidget {
           bottomNavigationBar: _BottomActionBar(
             onAddToCart: () =>
                 context.read<ProductDetailBloc>().add(AddToCart()),
+            onBuyNow: () => context.read<ProductDetailBloc>().add(BuyNow()),
           ),
           body: SafeArea(
             child: SingleChildScrollView(
@@ -378,7 +398,8 @@ class _ReviewSection extends StatelessWidget {
 
 class _BottomActionBar extends StatelessWidget {
   final VoidCallback onAddToCart;
-  const _BottomActionBar({required this.onAddToCart});
+  final VoidCallback onBuyNow;
+  const _BottomActionBar({required this.onAddToCart, required this.onBuyNow});
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +420,7 @@ class _BottomActionBar extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.cyan,
                 ),
-                onPressed: () {},
+                onPressed: onBuyNow,
                 child: const Text('Buy Now'),
               ),
             ),

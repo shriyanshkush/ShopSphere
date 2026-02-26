@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shopsphere/core/constants/Routes.dart';
 
 class BottomNav extends StatelessWidget {
   const BottomNav({super.key});
@@ -9,6 +10,11 @@ class BottomNav extends StatelessWidget {
       currentIndex: 0,
       selectedItemColor: Colors.cyan,
       unselectedItemColor: Colors.grey,
+      onTap: (index) {
+        if (index == 3) {
+          Navigator.pushNamed(context, Routes.profile);
+        }
+      },
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Browse'),

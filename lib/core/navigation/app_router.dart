@@ -10,6 +10,8 @@ import 'package:shopsphere/features/product_detail/data/datasources/product_deta
 import 'package:shopsphere/features/product_detail/data/repositories/product_detail_repository_impl.dart';
 import 'package:shopsphere/features/product_detail/presentation/bloc/product_detail_bloc.dart';
 import 'package:shopsphere/features/product_detail/presentation/pages/product_detail_page.dart';
+import 'package:shopsphere/features/product_detail/presentation/pages/order_confirmed_page.dart';
+import 'package:shopsphere/features/profile/presentation/pages/profile_page.dart';
 
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
@@ -68,6 +70,13 @@ class AppRouter {
             child: ProductDetailPage(productId: productId),
           ),
         );
+
+      case Routes.profile:
+        return _page(const ProfilePage());
+
+      case Routes.orderConfirmed:
+        final args = settings.arguments as OrderConfirmedArgs;
+        return _page(OrderConfirmedPage(args: args));
 
 
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import '../../data/models/review_model.dart';
 import '../blocs/review/ReviewBloc.dart';
 import '../blocs/review/ReviewEvent.dart';
@@ -44,6 +45,10 @@ class ReviewListPage extends StatelessWidget {
         builder: (context, state) {
           if (state.loading && state.reviews.isEmpty) {
             return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state.error != null && state.reviews.isEmpty) {
+            return Center(child: Text(state.error!));
           }
 
           return ListView(
@@ -214,6 +219,9 @@ class _ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final date = review.createdAt != null
+        ? DateFormat('MMM dd, yyyy').format(review.createdAt!)
+        : '';
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -248,12 +256,24 @@ class _ReviewCard extends StatelessWidget {
                   ),
                 ],
               ),
+              const Spacer(),
+              if (date.isNotEmpty)
+                Text(date, style: const TextStyle(color: Colors.black38)),
             ],
           ),
           const SizedBox(height: 12),
+          const Text(
+            'VERIFIED PURCHASE',
+            style: TextStyle(
+              color: Colors.green,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 8),
           Text(
             review.comment,
-            style: const TextStyle(color: Colors.grey),
+            style: const TextStyle(color: Colors.black87, height: 1.4),
           ),
           const SizedBox(height: 12),
           Row(
@@ -278,4 +298,3 @@ class _ReviewCard extends StatelessWidget {
     );
   }
 }
-

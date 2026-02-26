@@ -21,7 +21,23 @@ class ProductDetailRemoteDataSource {
   }
 
   Future<void> toggleWishlist(String productId) async {
-    await dio.post('/api/wishlist/add', data: { 'productId': productId });
+    try {
+      await dio.post('/api/wishlist/add', data: {'productId': productId});
+    } on DioException catch (e) {
+      final alreadyInWishlist = e.response?.statusCode == 400 &&
+          (e.response?.data is Map) &&
+          (e.response?.data['msg']
+                  ?.toString()
+                  .toLowerCase()
+                  .contains('already in wishlist') ??
+              false);
+
+      if (alreadyInWishlist) {
+        await dio.delete('/api/wishlist/remove/$productId');
+        return;
+      }
+      rethrow;
+    }
   }
 
   Future<void> addToCart(String productId) async {

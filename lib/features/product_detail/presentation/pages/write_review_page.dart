@@ -35,6 +35,10 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
         if (state.success) {
           Navigator.pop(context);
         }
+        if (state.error != null) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(state.error!)));
+        }
       },
       builder: (context, state) {
         return Scaffold(
@@ -98,7 +102,30 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
 
                 const SizedBox(height: 24),
 
-                /// ✍️ REVIEW
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.photo_camera, color: Colors.cyan),
+                      SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Add a Photo or Video', style: TextStyle(fontWeight: FontWeight.w600)),
+                          Text('Help others see the product details', style: TextStyle(color: Colors.black54)),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
                 const Text('Write your review',
                     style:
                     TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

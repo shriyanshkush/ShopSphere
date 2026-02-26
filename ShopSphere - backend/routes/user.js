@@ -16,5 +16,6 @@ userRouter.post("/api/save-user-address", auth, userController.saveAddress);
 userRouter.post("/api/order", auth, userController.placeOrder);
 userRouter.get("/api/orders/me", auth, pagination, userController.getMyOrders);
 userRouter.get("/api/orders/:orderId", auth, userController.getOrderDetails);
+userRouter.get("/api/profile/details", auth, userController.getProfileDetails);
 
 module.exports = userRouter;

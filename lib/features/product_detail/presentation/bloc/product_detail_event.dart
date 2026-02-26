@@ -8,3 +8,7 @@ class LoadProductDetail extends ProductDetailEvent {
 class ToggleWishlist extends ProductDetailEvent {}
 
 class AddToCart extends ProductDetailEvent {}
+
+class BuyNow extends ProductDetailEvent {}
+
+class ClearOrderConfirmation extends ProductDetailEvent {}

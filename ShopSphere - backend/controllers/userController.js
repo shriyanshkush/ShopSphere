@@ -1,8 +1,40 @@
 const User = require("../models/user");
 const { Product } = require("../models/product");
 const Order = require("../models/order");
+const Wishlist = require('../models/wishlist');
 
 class UserController {
+    async getProfileDetails(req, res) {
+        try {
+            const user = await User.findById(req.user).select('name email type createdAt');
+            if (!user) {
+                return res.status(404).json({ msg: "User not found" });
+            }
+
+            const [ordersCount, wishlistCount, pointsAgg] = await Promise.all([
+                Order.countDocuments({ userId: req.user }),
+                Wishlist.countDocuments({ userId: req.user }),
+                Order.aggregate([
+                    { $match: { userId: user._id } },
+                    { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+                ])
+            ]);
+
+            const points = Math.round((pointsAgg[0]?.total || 0) * 10);
+
+            res.json({
+                user,
+                stats: {
+                    ordersCount,
+                    wishlistCount,
+                    points,
+                }
+            });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
     async addToCart(req, res) {
         try {
             const { id } = req.body;

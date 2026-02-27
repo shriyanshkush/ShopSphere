@@ -1,4 +1,5 @@
 import 'package:shopsphere/features/home/data/datasources/%20home_remote_data_source.dart';
+import '../../../profile/data/models/user_model.dart';
 import '../../domain/repositories/home_repository.dart';
 import '../models/product_model.dart';
 
@@ -79,4 +80,9 @@ class HomeRepositoryImpl implements HomeRepository {
 
   @override
   Future<Map<String, dynamic>> getCart() => remote.getCart();
+
+  @override
+  Future<UserModel?> getUser() {
+    return remote.fetchUser();
+  }
 }

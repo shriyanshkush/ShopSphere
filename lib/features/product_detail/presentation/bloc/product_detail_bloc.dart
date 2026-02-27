@@ -21,17 +21,22 @@ class ProductDetailBloc
 
     final res = await repo.getProductDetail(e.productId);
 
+    final wishlists= await repo.getWishlist();
+
+
+
     emit(state.copyWith(
       loading: false,
       product: res.product,
       reviews: res.reviews,
+      isWishlisted: wishlists.contains(productId)
     ));
 
   }
 
   Future<void> _wishlist(
       ToggleWishlist e, Emitter<ProductDetailState> emit) async {
-    await repo.toggleWishlist(productId);
+    await repo.toggleWishlist(productId,!state.isWishlisted);
     emit(state.copyWith(isWishlisted: !state.isWishlisted));
   }
 

@@ -10,3 +10,6 @@ class SignupRequested extends AuthEvent {
   final String name, email, password;
   SignupRequested(this.name, this.email, this.password);
 }
+
+/// ✅ ADD THIS
+class LogoutRequested extends AuthEvent {}

@@ -14,4 +14,6 @@ class Routes {
   static const checkoutPayment = '/checkout/payment';
   static const checkoutReview = '/checkout/review';
 
+  static const allcategories = "/categories";
+
 }

@@ -12,7 +12,18 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
   Future<void> _load(LoadProfile event, Emitter<ProfileState> emit) async {
     emit(state.copyWith(loading: true));
+
     final orders = await repo.getRecentOrders();
-    emit(state.copyWith(loading: false, orders: orders));
+    final user = await repo.getProfile();
+
+    emit(
+      state.copyWith(
+        loading: false,
+        orders: orders,
+        user: user,
+      ),
+    );
   }
+
+
 }

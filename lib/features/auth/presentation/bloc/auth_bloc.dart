@@ -35,5 +35,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthError('Signup failed'));
       }
     });
+
+    /// ✅ ADD THIS
+    on<LogoutRequested>((event, emit) async {
+      await repo.logout();
+      emit(AuthUnauthenticated());
+    });
   }
 }

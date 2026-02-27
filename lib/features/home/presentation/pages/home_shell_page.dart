@@ -19,18 +19,20 @@ class _HomeShellPageState extends State<HomeShellPage> {
 
   @override
   Widget build(BuildContext context) {
+
     final pages = [
-      const HomePage(showBottomNav: false),
-      SearchPage(onBackToHome: () => setState(() => _index = 0)),
+      const HomePage(showBottomNav: false), // 0 Home
+      SearchPage(onBackToHome: () => setState(() => _index = 0)), // 1 Search
       const CartPage(),
-      const SearchPage(),
       const ProfilePage(),
       const _MorePage(),
     ];
 
     return Scaffold(
       body: IndexedStack(index: _index, children: pages),
+      backgroundColor: Colors.white,
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
         currentIndex: _index,
         onTap: (i) => setState(() => _index = i),
         selectedItemColor: Colors.cyan,

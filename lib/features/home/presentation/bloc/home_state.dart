@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../profile/data/models/user_model.dart';
 import '../../data/models/product_model.dart';
 
 const _unset = Object();
@@ -23,6 +24,7 @@ class HomeState extends Equatable {
 
   final String searchQuery;
   final bool isSearching;
+  final UserModel? user;
 
 
   const HomeState({
@@ -42,6 +44,7 @@ class HomeState extends Equatable {
     required this.sort,
     required this.searchQuery,
     required this.isSearching,
+    this.user,
   });
 
   factory HomeState.initial() {
@@ -62,6 +65,7 @@ class HomeState extends Equatable {
       sort: '',
       searchQuery: '',
       isSearching: false,
+      user: null,
     );
   }
 
@@ -82,6 +86,7 @@ class HomeState extends Equatable {
     String? sort,
     String? searchQuery,
     bool? isSearching,
+    UserModel? user,
   }) {
     return HomeState(
       loading: loading ?? this.loading,
@@ -100,6 +105,7 @@ class HomeState extends Equatable {
       sort: sort ?? this.sort,
       searchQuery: searchQuery ?? this.searchQuery,
       isSearching: isSearching ?? this.isSearching,
+      user: user ?? this.user,
     );
   }
 
@@ -121,5 +127,6 @@ class HomeState extends Equatable {
         sort,
     searchQuery,
     isSearching,
+    user
       ];
 }

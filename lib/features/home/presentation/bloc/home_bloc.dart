@@ -28,12 +28,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final wishlist = await repo.getWishlist();
     final categories = await repo.getCategories();
     final cart = await repo.getCart();
+    final user = await repo.getUser(); // ✅ ADD THIS
     final cartItems = (cart['items'] as List? ?? []);
     emit(state.copyWith(
       loading: false,
       products: products,
       wishlist: wishlist,
       categories: categories,
+      user: user, // ✅ ADD THIS
       cartItems: cartItems,
       cartCount: cartItems.fold<int>(0, (s, e) => s + ((e['quantity'] as num?)?.toInt() ?? 0)),
       cartTotal: (cart['totalAmount'] as num?)?.toDouble() ?? 0,

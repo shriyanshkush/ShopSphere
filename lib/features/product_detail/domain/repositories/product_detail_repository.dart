@@ -6,12 +6,14 @@ import '../../data/models/review_model.dart';
 abstract class ProductDetailRepository {
   Future<ProductDetailResponse> getProductDetail(String id);
   Future<List<ReviewModel>> getReviews(String productId);
-  Future<void> toggleWishlist(String productId);
+  Future<void> toggleWishlist(String productId,bool add);
   Future<void> addToCart(String productId);
   Future<void> addReview({
     required String productId,
     required int rating,
     required String comment,
   });
+
+  Future<Set<String>> getWishlist();
 
 }

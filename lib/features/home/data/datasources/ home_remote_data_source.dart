@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:shopsphere/core/services/api_service.dart';
+import '../../../profile/data/models/user_model.dart';
 import '../models/home_response.dart';
 import '../models/product_model.dart';
 
@@ -117,5 +118,14 @@ class HomeRemoteDataSource {
   Future<Map<String, dynamic>> getCart() async {
     final res = await dio.get('/api/cart');
     return res.data;
+  }
+
+  Future<UserModel?> fetchUser() async {
+    try {
+      final res = await dio.get('/api/user');
+      return UserModel.fromJson(res.data);
+    } catch (e) {
+      return null;
+    }
   }
 }

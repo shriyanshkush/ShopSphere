@@ -6,6 +6,7 @@ import 'package:shopsphere/core/constants/Routes.dart';
 import 'package:shopsphere/features/home/presentation/bloc/home_bloc.dart';
 import 'package:shopsphere/features/home/presentation/bloc/home_event.dart';
 import 'package:shopsphere/features/home/presentation/bloc/home_state.dart';
+import 'package:shopsphere/features/home/presentation/pages/product_card.dart';
 
 class SearchPage extends StatefulWidget {
   final VoidCallback? onBackToHome;
@@ -55,6 +56,7 @@ class _SearchPageState extends State<SearchPage> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) {
         RangeValues rangeValues = RangeValues(
@@ -212,7 +214,10 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.onBackToHome ?? () => Navigator.pop(context)),
         title: _SearchField(controller: _controller, onChanged: _updateSearch),
         actions: [
@@ -268,25 +273,53 @@ class _SearchPageState extends State<SearchPage> {
                           crossAxisCount: 2,
                           mainAxisSpacing: 12,
                           crossAxisSpacing: 12,
-                          childAspectRatio: 0.52,
+                          childAspectRatio: 0.72, // ✅ important change
                         ),
                         itemCount: state.products.length,
-                        itemBuilder: (context, index) {
-                          final product = state.products[index];
-                          return _SearchCard(
-                            onTap: () => Navigator.pushNamed(
-                              context,
-                              Routes.productDetail,
-                              arguments: product.id,
-                            ),
-                            onAddToCart: () => context.read<HomeBloc>().add(AddToCart(product.id)),
-                            image: product.images.isNotEmpty ? product.images.first : '',
-                            title: product.name,
-                            rating: product.rating,
-                            reviews: product.reviews,
-                            price: product.price,
+                        // itemBuilder: (context, index) {
+                        //   final product = state.products[index];
+                        //   return _SearchCard(
+                        //     onTap: () => Navigator.pushNamed(
+                        //       context,
+                        //       Routes.productDetail,
+                        //       arguments: product.id,
+                        //     ),
+                        //     onAddToCart: () => context.read<HomeBloc>().add(AddToCart(product.id)),
+                        //     image: product.images.isNotEmpty ? product.images.first : '',
+                        //     title: product.name,
+                        //     rating: product.rating,
+                        //     reviews: product.reviews,
+                        //     price: product.price,
+                        //   );
+                        // },
+
+                  itemBuilder: (context, index) {
+                    final product = state.products[index];
+
+                    return GestureDetector(
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        Routes.productDetail,
+                        arguments: product.id,
+                      ),
+                      child: ProductCard(
+                        product: product,
+                        isWishlisted: state.wishlist.contains(product.id),
+
+                        onWishlistTap: () {
+                          context.read<HomeBloc>().add(
+                            ToggleWishlist(product.id),
                           );
                         },
+
+                        onAddToCart: () {
+                          context.read<HomeBloc>().add(
+                            AddToCart(product.id),
+                          );
+                        },
+                      ),
+                    );
+                  },
                       ),
               ),
             ],

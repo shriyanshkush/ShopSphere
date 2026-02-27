@@ -20,10 +20,12 @@ import 'package:shopsphere/features/checkout/presentation/pages/checkout_payment
 import 'package:shopsphere/features/checkout/presentation/pages/checkout_review_page.dart';
 import 'package:shopsphere/features/checkout/presentation/models/checkout_flow_args.dart';
 
+import '../../common/constants/GlobalVariable.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/signup_page.dart';
+import '../../features/home/presentation/pages/allCategories.dart';
 import '../constants/Routes.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -78,8 +80,15 @@ class AppRouter {
           ),
         );
 
+      case Routes.allcategories:
+        return _page(
+          CategoriesPage(
+            categories: GlobalVariable.categories,
+          ),
+        );
 
-      case Routes.categoryProducts:
+
+    case Routes.categoryProducts:
         final category = settings.arguments as String;
         return _page(
           BlocProvider(

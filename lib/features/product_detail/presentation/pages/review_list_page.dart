@@ -54,8 +54,8 @@ class ReviewListPage extends StatelessWidget {
                 totalReviews: totalReviews,
               ),
               const SizedBox(height: 16),
-              _FilterRow(),
-              const SizedBox(height: 24),
+              // _FilterRow(),
+              // const SizedBox(height: 24),
 
               /// REVIEWS
               ...state.reviews.map((r) => _ReviewCard(review: r)),

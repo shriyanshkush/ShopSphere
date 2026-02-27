@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shopsphere/core/constants/Routes.dart';
@@ -7,6 +8,9 @@ import 'package:shopsphere/features/profile/presentation/bloc/profile_bloc.dart'
 import 'package:shopsphere/features/profile/presentation/bloc/profile_event.dart';
 import 'package:shopsphere/features/profile/presentation/bloc/profile_state.dart';
 
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
+
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
@@ -15,6 +19,7 @@ class ProfilePage extends StatelessWidget {
     return BlocProvider(
       create: (_) => ProfileBloc(ProfileRepositoryImpl(ProfileRemoteDataSource()))..add(LoadProfile()),
       child: Scaffold(
+
         body: SafeArea(
           child: BlocBuilder<ProfileBloc, ProfileState>(
             builder: (context, state) {
@@ -47,7 +52,14 @@ class ProfilePage extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           const Text('Welcome back,', style: TextStyle(color: Colors.white, fontSize: 18)),
-                          const Text('Shrish', style: TextStyle(color: Colors.white, fontSize: 44, fontWeight: FontWeight.w800)),
+                          Text(
+                            state.user?.name ?? 'User',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -73,7 +85,54 @@ class ProfilePage extends StatelessWidget {
                         children: [
                           Expanded(child: _QuickCard('Wishlist', Icons.favorite_border, onTap: () => Navigator.pushNamed(context, Routes.wishlist))),
                           const SizedBox(width: 12),
-                          const Expanded(child: _QuickCard('Logout', Icons.logout)),
+              Expanded(
+              child: _QuickCard(
+              'Logout',
+                Icons.logout,
+                onTap: () async {
+
+                  final confirm = await showCupertinoDialog<bool>(
+                    context: context,
+                    builder: (context) => CupertinoAlertDialog(
+                      title: const Text('Logout', style: TextStyle(fontSize: 18),),
+                      content: const Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Are you sure you want to logout?',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                      actions: [
+
+                        /// Cancel
+                        CupertinoDialogAction(
+                          isDefaultAction: true,
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Cancel',style: TextStyle(color: Colors.cyan),),
+                        ),
+
+                        /// Logout
+                        CupertinoDialogAction(
+                          isDestructiveAction: true,
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Logout'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirm == true) {
+                    context.read<AuthBloc>().add(LogoutRequested());
+
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      Routes.login,
+                          (_) => false,
+                    );
+                  }
+                },
+              ),
+              ),
                         ],
                       ),
                     ),

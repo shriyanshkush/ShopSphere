@@ -2,8 +2,22 @@ import 'package:dio/dio.dart';
 import 'package:shopsphere/core/services/api_service.dart';
 import 'package:shopsphere/features/profile/data/models/recent_order_model.dart';
 
+import '../models/user_model.dart';
+
 class ProfileRemoteDataSource {
   final Dio dio = ApiService().dio;
+
+
+  Future<UserModel?> getProfile() async {
+    try {
+      final res = await dio.get('/api/user');
+
+      return UserModel.fromJson(res.data);
+
+    } catch (e) {
+      return null;
+    }
+  }
 
   Future<List<RecentOrderModel>> getRecentOrders() async {
     try {

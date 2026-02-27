@@ -1,3 +1,4 @@
+import '../../../profile/data/models/user_model.dart';
 import '../../data/models/product_model.dart';
 
 abstract class HomeRepository {
@@ -31,4 +32,6 @@ abstract class HomeRepository {
   Future<void> addToCart(String productId);
   Future<void> removeFromCart(String productId);
   Future<Map<String, dynamic>> getCart();
+
+  Future<UserModel?> getUser();
 }

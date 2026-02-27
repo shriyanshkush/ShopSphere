@@ -50,25 +50,31 @@ class ProductDetailPage extends StatelessWidget {
             },
           ),
           body: SafeArea(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _TopBar(
-                    isWishlisted: state.isWishlisted,
-                    onWishlist: () => context.read<ProductDetailBloc>().add(ToggleWishlist()),
-                  ),
-                  _ImageCarousel(images: product.images),
-                  _ProductInfo(product: product),
-                  _ProductDescription(description: product.description),
-                  _ReviewSection(
-                    rating: product.rating,
-                    reviewsCount: product.reviews,
-                    productDetailModel: product,
-                  ),
-                  const SizedBox(height: 24),
-                ],
+            child: RefreshIndicator(
+              onRefresh: () async {
+                context.read<ProductDetailBloc>()
+                    .add(LoadProductDetail(productId));
+              },
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _TopBar(
+                      isWishlisted: state.isWishlisted,
+                      onWishlist: () => context.read<ProductDetailBloc>().add(ToggleWishlist()),
+                    ),
+                    _ImageCarousel(images: product.images),
+                    _ProductInfo(product: product),
+                    _ProductDescription(description: product.description),
+                    _ReviewSection(
+                      rating: product.rating,
+                      reviewsCount: product.reviews,
+                      productDetailModel: product,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
           ),

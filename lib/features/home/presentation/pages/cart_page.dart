@@ -6,6 +6,7 @@ import 'package:shopsphere/features/home/presentation/bloc/home_event.dart';
 import 'package:shopsphere/features/home/presentation/bloc/home_state.dart';
 
 class CartPage extends StatefulWidget {
+
   const CartPage({super.key});
 
   @override
@@ -336,7 +337,7 @@ class _CheckoutButton extends StatelessWidget {
           backgroundColor: const Color(0xFF18C4D9),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
-        child: const Text('Proceed to Checkout  →', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+        child: const Text('Proceed to Checkout  →', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700,color: Colors.white)),
       ),
     );
   }

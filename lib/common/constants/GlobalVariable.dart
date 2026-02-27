@@ -18,7 +18,7 @@ class GlobalVariable{
       'icon': 'assets/icons/cell-phone.png',
     },
     {
-      'name': 'Laptops',
+      'name': 'Laptop',
       'icon': 'assets/icons/laptop.png',
     },
     {

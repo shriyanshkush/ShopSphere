@@ -27,4 +27,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<bool> isLoggedIn() => _local.isLoggedIn();
+
+  @override
+  Future<void> logout() async {
+    await _local.clear(); // clear token, refreshToken, user
+  }
 }

@@ -21,8 +21,8 @@ class ProductDetailRepositoryImpl implements ProductDetailRepository {
   }
 
   @override
-  Future<void> toggleWishlist(String productId) {
-    return remote.toggleWishlist(productId);
+  Future<void> toggleWishlist(String productId,bool add) {
+    return remote.toggleWishlist(productId,add);
   }
 
   @override
@@ -41,6 +41,11 @@ class ProductDetailRepositoryImpl implements ProductDetailRepository {
       rating: rating,
       comment: comment,
     );
+  }
+
+  @override
+  Future<Set<String>> getWishlist() {
+    return remote.fetchWishlist();
   }
 
 }

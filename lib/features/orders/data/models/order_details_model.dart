@@ -50,8 +50,8 @@ class OrderDetailsModel {
       paymentMethod: (json['payment']?['method'] ?? 'COD').toString(),
       paymentStatus: (json['payment']?['status'] ?? 'pending').toString(),
       subtotal: subtotal,
-      tax: tax,
-      shippingFee: shipping,
+      tax: tax.toDouble(),
+      shippingFee: shipping.toDouble(),
       total: total,
     );
   }

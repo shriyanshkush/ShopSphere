@@ -36,6 +36,7 @@ class _AdminInventoryPageState extends State<AdminInventoryPage> {
         actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.notifications, color: Colors.white))],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "inventory_fab",   // ✅ ADD THIS
         backgroundColor: const Color(0xFF19C8DC),
         onPressed: () async {
           await Navigator.push(

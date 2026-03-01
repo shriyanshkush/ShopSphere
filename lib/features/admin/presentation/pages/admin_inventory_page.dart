@@ -129,7 +129,7 @@ class _AdminInventoryPageState extends State<AdminInventoryPage> {
         onSelected: (_) {
           setState(() => selectedChip = idx);
           if (idx == 1) {
-            context.read<AdminBloc>().add(LoadInventory(status: 'low stock'));
+            context.read<AdminBloc>().add(LoadInventory(status: 'low'));
           } else {
             context.read<AdminBloc>().add(LoadInventory());
           }

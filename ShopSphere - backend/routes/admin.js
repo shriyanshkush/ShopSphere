@@ -19,5 +19,7 @@ adminRouter.post('/admin/change-order-status', admin, adminController.changeOrde
 adminRouter.get('/admin/analytics', admin, adminController.getAnalytics);
 adminRouter.get('/admin/inventory-report', admin, adminController.getInventoryReport);
 adminRouter.get('/admin/inventory', admin, adminController.getInventory);
+adminRouter.get('/admin/best-selling-products', admin, adminController.getBestSellingProducts);
+adminRouter.get('/admin/low-inventory-alerts', admin, adminController.getLowInventoryAlerts);
 
 module.exports = adminRouter;

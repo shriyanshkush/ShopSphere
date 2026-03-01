@@ -16,6 +16,13 @@ class AdminRepositoryImpl implements AdminRepository {
   Future fetchOrders() => _remote.fetchOrders();
 
 
+
+  @override
+  Future fetchBestSellingProducts() => _remote.fetchBestSellingProducts();
+
+  @override
+  Future fetchLowInventoryAlerts() => _remote.fetchLowInventoryAlerts();
+
   @override
   Future updateOrderStatus(String id, int status) =>
       _remote.updateOrderStatus(id, status);

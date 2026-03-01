@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shopsphere/features/admin/data/models/admin_order_model.dart';
 import 'package:shopsphere/features/admin/presentation/%20bloc/admin_bloc.dart';
 import 'package:shopsphere/features/admin/presentation/%20bloc/admin_event.dart';
 import 'package:shopsphere/features/admin/presentation/%20bloc/admin_state.dart';
@@ -13,7 +14,7 @@ class AdminOrdersPage extends StatefulWidget {
 
 class _AdminOrdersPageState extends State<AdminOrdersPage> {
   int selectedFilter = 0;
-  final filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered'];
+  final filters = ['All', 'Pending', 'Confirmed', 'Packed', 'Shipped', 'Delivered', 'Cancelled'];
 
   @override
   void initState() {
@@ -29,14 +30,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
         elevation: 0,
         backgroundColor: Colors.white,
         centerTitle: true,
-        leading: IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
         title: const Text('Orders', style: TextStyle(fontWeight: FontWeight.w700)),
-        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.tune))],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF1BC8DE),
-        onPressed: () {},
-        child: const Icon(Icons.add, size: 38, color: Colors.black),
       ),
       body: Column(
         children: [
@@ -60,7 +54,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
                     backgroundColor: const Color(0xFFE8EBEF),
                     labelStyle: TextStyle(
                       color: selected ? Colors.white : Colors.black,
-                      fontSize: 18 / 1.2,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
@@ -83,7 +77,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
                   return const SizedBox.shrink();
                 }
 
-                var orders = state.orders;
+                List<AdminOrderModel> orders = List<AdminOrderModel>.from(state.orders);
                 if (selectedFilter > 0) {
                   final selected = filters[selectedFilter].toLowerCase();
                   orders = orders.where((e) => e.status.toLowerCase() == selected).toList();
@@ -96,7 +90,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
                 return ListView.separated(
                   itemCount: orders.length,
                   separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (_, i) => _OrderCard(order: orders[i], initiallyExpanded: i == 0),
+                  itemBuilder: (_, i) => _OrderCard(order: orders[i]),
                 );
               },
             ),
@@ -108,28 +102,20 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
 }
 
 class _OrderCard extends StatefulWidget {
-  final dynamic order;
-  final bool initiallyExpanded;
-  const _OrderCard({required this.order, required this.initiallyExpanded});
+  final AdminOrderModel order;
+  const _OrderCard({required this.order});
 
   @override
   State<_OrderCard> createState() => _OrderCardState();
 }
 
 class _OrderCardState extends State<_OrderCard> {
-  late bool expanded;
-
-  @override
-  void initState() {
-    super.initState();
-    expanded = widget.initiallyExpanded;
-  }
+  bool expanded = false;
 
   @override
   Widget build(BuildContext context) {
     final statusColor = _statusColor(widget.order.status);
     return Container(
-      color: Colors.transparent,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       child: Column(
         children: [
@@ -139,32 +125,32 @@ class _OrderCardState extends State<_OrderCard> {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: expanded ? const Color(0xFF1BC8DE) : Colors.transparent,
+                  color: statusColor.withOpacity(0.14),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: expanded ? const Color(0xFF1BC8DE) : const Color(0xFFD0D5DD)),
+                  border: Border.all(color: statusColor.withOpacity(0.25)),
                 ),
-                child: expanded ? const Icon(Icons.check, color: Colors.white) : null,
+                child: Icon(Icons.receipt_long, color: statusColor, size: 18),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('#ORD-${widget.order.id.substring(0, 4)}', style: const TextStyle(fontSize: 40 / 2, fontWeight: FontWeight.w700)),
+                    Text('#ORD-${widget.order.id.substring(0, 4).toUpperCase()}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 2),
-                    const Text('Alex Johnson • Oct 24, 2023', style: TextStyle(color: Color(0xFF5B7F84), fontSize: 35 / 2.5)),
+                    Text(_formatDate(widget.order.orderedAt), style: const TextStyle(color: Color(0xFF5B7F84), fontSize: 13)),
                   ],
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('\$${widget.order.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 22 / 1.3)),
+                  Text('\$${widget.order.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                   Row(
                     children: [
                       Icon(Icons.circle, size: 10, color: statusColor),
                       const SizedBox(width: 6),
-                      Text(widget.order.status, style: TextStyle(color: const Color(0xFF5B7F84), fontSize: 34 / 2.4)),
+                      Text(widget.order.status, style: const TextStyle(color: Color(0xFF5B7F84), fontSize: 13)),
                     ],
                   ),
                 ],
@@ -184,7 +170,7 @@ class _OrderCardState extends State<_OrderCard> {
                   const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text('STATUS', style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 1.3)),
                     SizedBox(height: 4),
-                    Text('Action Required', style: TextStyle(color: Color(0xFF5B7F84), fontSize: 34 / 2.5)),
+                    Text('Update to next stage', style: TextStyle(color: Color(0xFF5B7F84), fontSize: 12)),
                   ]),
                   const Spacer(),
                   ElevatedButton(
@@ -193,10 +179,12 @@ class _OrderCardState extends State<_OrderCard> {
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
-                    onPressed: () => context.read<AdminBloc>().add(UpdateOrderStatus(widget.order.id, 3)),
+                    onPressed: widget.order.statusCode >= 4
+                        ? null
+                        : () => context.read<AdminBloc>().add(UpdateOrderStatus(widget.order.id, widget.order.statusCode + 1)),
                     child: const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                      child: Row(children: [Text('Update', style: TextStyle(fontWeight: FontWeight.w700)), SizedBox(width: 8), Icon(Icons.keyboard_arrow_down)]),
+                      child: Text('Move Next', style: TextStyle(fontWeight: FontWeight.w700)),
                     ),
                   )
                 ],
@@ -214,15 +202,25 @@ class _OrderCardState extends State<_OrderCard> {
                   Row(children: [
                     const Icon(Icons.shopping_bag_outlined, color: Color(0xFF5B7F84)),
                     const SizedBox(width: 10),
-                    const Text('Quick View', style: TextStyle(fontSize: 36 / 2, fontWeight: FontWeight.w700)),
+                    const Text('Quick View', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                     const Spacer(),
                     Icon(expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down),
                   ]),
                   if (expanded) ...[
                     const Divider(height: 22, color: Color(0xFFD2DDE1)),
-                    const _ItemRow('Wireless Headphones', 'Qty: 1 • \$89.00', '\$89.00'),
-                    const SizedBox(height: 12),
-                    const _ItemRow('USB-C Cable (2m)', 'Qty: 1 • \$35.50', '\$35.50'),
+                    ...widget.order.items.map((item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _ItemRow(
+                        item.name,
+                        'Qty: ${item.quantity} • \$${item.unitPrice.toStringAsFixed(2)}',
+                        '\$${item.total.toStringAsFixed(2)}',
+                      ),
+                    )),
+                    if (widget.order.items.isEmpty)
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('No item details found', style: TextStyle(color: Color(0xFF5B7F84))),
+                      ),
                   ],
                 ],
               ),
@@ -233,16 +231,26 @@ class _OrderCardState extends State<_OrderCard> {
     );
   }
 
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'Unknown date';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
   Color _statusColor(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
         return const Color(0xFFF4B400);
-      case 'processing':
+      case 'confirmed':
         return const Color(0xFF6366F1);
+      case 'packed':
+        return const Color(0xFF8B5CF6);
       case 'shipped':
         return const Color(0xFF60A5FA);
       case 'delivered':
         return const Color(0xFF22C55E);
+      case 'cancelled':
+        return const Color(0xFFEF4444);
       default:
         return const Color(0xFF94A3B8);
     }
@@ -260,19 +268,19 @@ class _ItemRow extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 52,
-          height: 52,
+          width: 42,
+          height: 42,
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.white),
-          child: const Icon(Icons.headphones, color: Color(0xFF98A1B2)),
+          child: const Icon(Icons.inventory_2_outlined, color: Color(0xFF98A1B2)),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: const TextStyle(fontSize: 35 / 2.1, fontWeight: FontWeight.w500)),
-            Text(subtitle, style: const TextStyle(color: Color(0xFF5B7F84), fontSize: 33 / 2.5)),
+            Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+            Text(subtitle, style: const TextStyle(color: Color(0xFF5B7F84), fontSize: 13)),
           ]),
         ),
-        Text(price, style: const TextStyle(fontSize: 35 / 2.1, fontWeight: FontWeight.w500))
+        Text(price, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600))
       ],
     );
   }

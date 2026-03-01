@@ -3,6 +3,8 @@ import 'dart:io';
 abstract class AdminRepository {
   Future fetchDashboard();
   Future fetchOrders();
+  Future fetchBestSellingProducts();
+  Future fetchLowInventoryAlerts();
   Future updateOrderStatus(String id, int status);
   // ✅ ADD THIS
   Future<List<dynamic>> fetchInventory({

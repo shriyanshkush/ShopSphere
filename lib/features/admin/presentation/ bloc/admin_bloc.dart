@@ -4,10 +4,8 @@ import 'admin_event.dart';
 import 'admin_state.dart';
 import '../../domain/repositories/admin_repository.dart';
 
-
 class AdminBloc extends Bloc<AdminEvent, AdminState> {
   final AdminRepositoryImpl repo;
-
 
   AdminBloc(this.repo) : super(AdminInitial()) {
     on<LoadDashboard>((_, emit) async {
@@ -20,7 +18,6 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       }
     });
 
-
     on<LoadOrders>((_, emit) async {
       emit(AdminLoading());
       try {
@@ -31,12 +28,31 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       }
     });
 
+    on<LoadBestSellingProducts>((_, emit) async {
+      emit(AdminLoading());
+      try {
+        final data = await repo.fetchBestSellingProducts();
+        emit(AdminBestSellingLoaded(data));
+      } catch (_) {
+        emit(AdminError('Failed to load best-selling products'));
+      }
+    });
+
+    on<LoadLowInventoryAlerts>((_, emit) async {
+      emit(AdminLoading());
+      try {
+        final data = await repo.fetchLowInventoryAlerts();
+        emit(AdminLowInventoryAlertsLoaded(data));
+      } catch (_) {
+        emit(AdminError('Failed to load inventory alerts'));
+      }
+    });
+
     on<UpdateOrderStatus>((e, emit) async {
       await repo.updateOrderStatus(e.id, e.status);
       add(LoadOrders());
     });
 
-    // ✅ ADD THIS BLOCK
     on<LoadInventory>((e, emit) async {
       emit(AdminLoading());
       try {
@@ -50,8 +66,6 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
         emit(AdminError('Failed to load inventory'));
       }
     });
-
-
 
     on<AddProduct>((e, emit) async {
       emit(AdminProductSaving());
@@ -88,6 +102,5 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
         emit(AdminProductError('Failed to update product'));
       }
     });
-
   }
 }

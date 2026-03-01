@@ -26,6 +26,20 @@ class AdminRemoteDataSource {
         .toList();
   }
 
+  Future<List<BestSellingProductModel>> fetchBestSellingProducts() async {
+    final res = await dio.get('/admin/best-selling-products');
+    return (res.data['products'] as List)
+        .map((item) => BestSellingProductModel.fromJson(item))
+        .toList();
+  }
+
+  Future<List<InventoryAlertModel>> fetchLowInventoryAlerts() async {
+    final res = await dio.get('/admin/low-inventory-alerts');
+    return (res.data['alerts'] as List)
+        .map((item) => InventoryAlertModel.fromJson(item))
+        .toList();
+  }
+
 
   Future<void> updateOrderStatus(String id, int status) async {
     await dio.post('/admin/change-order-status', data: {

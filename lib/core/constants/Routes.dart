@@ -13,6 +13,8 @@ class Routes {
   static const checkoutAddress = '/checkout/address';
   static const checkoutPayment = '/checkout/payment';
   static const checkoutReview = '/checkout/review';
+  static const orders = '/orders';
+  static const orderDetails = '/orders/details';
 
   static const allcategories = "/categories";
 

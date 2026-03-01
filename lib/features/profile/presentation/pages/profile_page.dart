@@ -71,7 +71,7 @@ class ProfilePage extends StatelessWidget {
                             child: _QuickCard(
                               'Your Orders',
                               Icons.shopping_bag_outlined,
-                              onTap: () => context.read<ProfileBloc>().add(LoadProfile()),
+                              onTap: () => Navigator.pushNamed(context, Routes.orders),
                             ),
                           ),
                           const SizedBox(width: 12),

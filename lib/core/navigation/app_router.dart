@@ -19,6 +19,11 @@ import 'package:shopsphere/features/checkout/presentation/pages/checkout_address
 import 'package:shopsphere/features/checkout/presentation/pages/checkout_payment_page.dart';
 import 'package:shopsphere/features/checkout/presentation/pages/checkout_review_page.dart';
 import 'package:shopsphere/features/checkout/presentation/models/checkout_flow_args.dart';
+import 'package:shopsphere/features/orders/data/datasources/orders_remote_data_source.dart';
+import 'package:shopsphere/features/orders/data/repositories/orders_repository_impl.dart';
+import 'package:shopsphere/features/orders/presentation/bloc/orders_bloc.dart';
+import 'package:shopsphere/features/orders/presentation/pages/order_details_page.dart';
+import 'package:shopsphere/features/orders/presentation/pages/orders_page.dart';
 
 import '../../common/constants/GlobalVariable.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
@@ -123,6 +128,23 @@ class AppRouter {
       case Routes.checkoutReview:
         final args = settings.arguments;
         return _page(CheckoutReviewPage(args: args is CheckoutReviewArgs ? args : null));
+
+      case Routes.orders:
+        return _page(
+          BlocProvider(
+            create: (_) => OrdersBloc(OrdersRepositoryImpl(OrdersRemoteDataSource())),
+            child: const OrdersPage(),
+          ),
+        );
+
+      case Routes.orderDetails:
+        final orderId = settings.arguments as String;
+        return _page(
+          BlocProvider(
+            create: (_) => OrdersBloc(OrdersRepositoryImpl(OrdersRemoteDataSource())),
+            child: OrderDetailsPage(orderId: orderId),
+          ),
+        );
 
       default:
         return _page(

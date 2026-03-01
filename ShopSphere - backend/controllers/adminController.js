@@ -330,6 +330,34 @@ class AdminController {
         }
     }
 
+
+    async getBestSellingProducts(req, res) {
+        try {
+            const products = await Product.find({})
+                .sort({ soldCount: -1, createdAt: -1 })
+                .limit(50)
+                .select('name category soldCount price images');
+
+            res.json({ products });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
+    async getLowInventoryAlerts(req, res) {
+        try {
+            const threshold = Number(req.query.threshold ?? 10);
+            const alerts = await Product.find({ quantity: { $lt: threshold } })
+                .sort({ quantity: 1, createdAt: -1 })
+                .limit(50)
+                .select('name sku quantity images');
+
+            res.json({ alerts });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
     async getInventory(req, res) {
   try {
     const { status, category, search } = req.query;

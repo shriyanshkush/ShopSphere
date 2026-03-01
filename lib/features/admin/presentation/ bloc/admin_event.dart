@@ -1,8 +1,12 @@
 abstract class AdminEvent {}
 
-
 class LoadDashboard extends AdminEvent {}
+
 class LoadOrders extends AdminEvent {}
+
+class LoadBestSellingProducts extends AdminEvent {}
+
+class LoadLowInventoryAlerts extends AdminEvent {}
 
 class LoadInventory extends AdminEvent {
   final String? status;
@@ -11,7 +15,6 @@ class LoadInventory extends AdminEvent {
 
   LoadInventory({this.status, this.category, this.search});
 }
-
 
 class UpdateOrderStatus extends AdminEvent {
   final String id;

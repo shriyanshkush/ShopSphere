@@ -6,10 +6,6 @@ import 'package:shopsphere/features/home/data/datasources/%20home_remote_data_so
 import 'package:shopsphere/features/home/data/repositories/home_repository_impl.dart';
 import 'package:shopsphere/features/home/presentation/bloc/home_bloc.dart';
 import 'package:shopsphere/features/home/presentation/pages/home_page.dart';
-import 'package:shopsphere/features/orders/data/datasources/orders_remote_data_source.dart';
-import 'package:shopsphere/features/orders/data/repositories/orders_repository_impl.dart';
-import 'package:shopsphere/features/orders/presentation/pages/order_details_page.dart';
-import 'package:shopsphere/features/orders/presentation/pages/orders_page.dart';
 import 'package:shopsphere/features/product_detail/data/datasources/product_detail_remote_data_source.dart';
 import 'package:shopsphere/features/product_detail/data/repositories/product_detail_repository_impl.dart';
 import 'package:shopsphere/features/product_detail/presentation/bloc/product_detail_bloc.dart';
@@ -81,23 +77,6 @@ class AppRouter {
       case Routes.orderConfirmed:
         final args = settings.arguments as OrderConfirmedArgs;
         return _page(OrderConfirmedPage(args: args));
-
-
-      case Routes.orders:
-        return _page(
-          OrdersPage(
-            repository: OrdersRepositoryImpl(OrdersRemoteDataSource()),
-          ),
-        );
-
-      case Routes.orderDetails:
-        final orderId = settings.arguments as String;
-        return _page(
-          OrderDetailsPage(
-            orderId: orderId,
-            repository: OrdersRepositoryImpl(OrdersRemoteDataSource()),
-          ),
-        );
 
 
 

@@ -1,19 +1,16 @@
-import '../../domain/repositories/orders_repository.dart';
-import '../datasources/orders_remote_data_source.dart';
-import '../models/order_model.dart';
+import 'package:shopsphere/features/orders/data/datasources/orders_remote_data_source.dart';
+import 'package:shopsphere/features/orders/data/models/order_details_model.dart';
+import 'package:shopsphere/features/orders/data/models/order_summary_model.dart';
+import 'package:shopsphere/features/orders/domain/repositories/orders_repository.dart';
 
 class OrdersRepositoryImpl implements OrdersRepository {
-  final OrdersRemoteDataSource remoteDataSource;
+  final OrdersRemoteDataSource _remote;
 
-  OrdersRepositoryImpl(this.remoteDataSource);
-
-  @override
-  Future<List<OrderModel>> getMyOrders({int page = 1, int limit = 20}) {
-    return remoteDataSource.getMyOrders(page: page, limit: limit);
-  }
+  OrdersRepositoryImpl(this._remote);
 
   @override
-  Future<OrderModel> getOrderDetails(String orderId) {
-    return remoteDataSource.getOrderDetails(orderId);
-  }
+  Future<List<OrderSummaryModel>> fetchMyOrders() => _remote.fetchMyOrders();
+
+  @override
+  Future<OrderDetailsModel> fetchOrderDetails(String orderId) => _remote.fetchOrderDetails(orderId);
 }

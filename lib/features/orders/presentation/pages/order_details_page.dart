@@ -1,288 +1,217 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:shopsphere/features/orders/domain/repositories/orders_repository.dart';
+import 'package:shopsphere/features/orders/data/models/order_details_model.dart';
+import 'package:shopsphere/features/orders/presentation/bloc/orders_bloc.dart';
+import 'package:shopsphere/features/orders/presentation/bloc/orders_event.dart';
+import 'package:shopsphere/features/orders/presentation/bloc/orders_state.dart';
 
-import '../../data/models/order_model.dart';
-
-class OrderDetailsPage extends StatelessWidget {
+class OrderDetailsPage extends StatefulWidget {
   final String orderId;
-  final OrdersRepository repository;
+  const OrderDetailsPage({super.key, required this.orderId});
 
-  const OrderDetailsPage({
-    super.key,
-    required this.orderId,
-    required this.repository,
-  });
+  @override
+  State<OrderDetailsPage> createState() => _OrderDetailsPageState();
+}
+
+class _OrderDetailsPageState extends State<OrderDetailsPage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<OrdersBloc>().add(LoadOrderDetails(widget.orderId));
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F5F7),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F5F7),
-        foregroundColor: const Color(0xFF0F172A),
-        elevation: 0,
-        title: const Text('Order Details', style: TextStyle(fontWeight: FontWeight.w700)),
-      ),
-      body: FutureBuilder<OrderModel>(
-        future: repository.getOrderDetails(orderId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: BlocBuilder<OrdersBloc, OrdersState>(
+          builder: (_, state) {
+            if (state.loadingDetails) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final details = state.details;
+            if (details == null) {
+              return const Center(child: Text('Unable to load order details'));
+            }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Failed to load order details: ${snapshot.error}'),
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
+              children: [
+                Row(
+                  children: [
+                    IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back)),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Order Details', style: TextStyle(fontSize: 32 / 1.4, fontWeight: FontWeight.w800)),
+                          Text('Order ${details.orderCode}', style: const TextStyle(color: Color(0xFF72849E))),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(color: const Color(0xFFE6FAFD), borderRadius: BorderRadius.circular(999), border: Border.all(color: const Color(0xFF9EEBF3))),
+                      child: Text(details.statusLabel, style: const TextStyle(color: Color(0xFF07BFD0), fontWeight: FontWeight.w700)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _shippingUpdatesCard(details),
+                const SizedBox(height: 22),
+                Text('Order Items (${details.items.length})', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 31 / 1.4)),
+                const SizedBox(height: 10),
+                ...details.items.map(_itemCard),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  icon: Icons.location_on,
+                  title: 'Shipping Address',
+                  child: Text(details.address.replaceAll(',', '\n'), style: const TextStyle(color: Color(0xFF3D4F6A), height: 1.5)),
+                ),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  icon: Icons.credit_card,
+                  title: 'Payment Method',
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(color: const Color(0xFFF1F4F8), borderRadius: BorderRadius.circular(8)),
+                        child: Text(details.paymentMethod.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(details.paymentStatus, style: const TextStyle(color: Color(0xFF3D4F6A))),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _priceSummary(details),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.receipt_long, color: Color(0xFF00C7DE)),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(58),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: Color(0xFF9EEBF3)),
+                  ),
+                  label: const Text('Download Invoice', style: TextStyle(color: Color(0xFF00C7DE), fontSize: 24 / 1.3, fontWeight: FontWeight.w700)),
+                ),
+              ],
             );
-          }
-
-          final order = snapshot.data!;
-
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-            children: [
-              _SectionCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Order #${order.id.toUpperCase()}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        _statusPill(order.statusLabel),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Placed on ${DateFormat('MMM dd, yyyy • hh:mm a').format(order.orderedAt)}',
-                      style: const TextStyle(color: Color(0xFF64748B)),
-                    ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'Shipping Updates',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-                    ),
-                    const SizedBox(height: 8),
-                    ..._buildStatusHistory(order.statusHistory),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-              const Text(
-                'Order Items',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 10),
-              ...order.products.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _OrderItemCard(item: item),
-              )),
-              const SizedBox(height: 14),
-              _SectionCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Shipping Address',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 8),
-                    Text(order.address, style: const TextStyle(color: Color(0xFF334155))),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-              _SectionCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Price Summary',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 10),
-                    _summaryRow('Subtotal (${order.products.length} items)', order.totalPrice),
-                    _summaryRow('Shipping Fee', 0, isFree: true),
-                    _summaryRow('Tax', order.totalPrice * 0.08),
-                    const Divider(height: 24),
-                    _summaryRow(
-                      'Total Amount',
-                      order.totalPrice + (order.totalPrice * 0.08),
-                      emphasize: true,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
+          },
+        ),
       ),
     );
   }
 
-  List<Widget> _buildStatusHistory(List<OrderStatusHistoryModel> history) {
-    if (history.isEmpty) {
-      return const [Text('No status updates available')];
-    }
-
-    final sorted = [...history]..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-
-    return sorted
-        .map(
-          (item) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Color(0xFF17C3D6), size: 18),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '${item.statusName} • ${DateFormat('MMM dd, hh:mm a').format(item.timestamp)}',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        ),
-      ),
-    )
-        .toList();
-  }
-
-  Widget _statusPill(String label) {
+  Widget _shippingUpdatesCard(OrderDetailsModel details) {
+    final updatedAt = DateFormat('MMM d').format(details.orderedAt);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFDFF9FC),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Color(0xFF06B6D4),
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-
-  Widget _summaryRow(String label, double value,
-      {bool emphasize = false, bool isFree = false}) {
-    final color = emphasize ? const Color(0xFF17C3D6) : const Color(0xFF0F172A);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE9EDF3))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: const Color(0xFF475569),
-                fontWeight: emphasize ? FontWeight.w700 : FontWeight.w500,
-              ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Shipping Updates', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22 / 1.3)),
+              Text('Updated $updatedAt', style: const TextStyle(color: Color(0xFF72849E))),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Row(children: [Icon(Icons.local_shipping, color: Color(0xFF08C3D5)), SizedBox(width: 10), Text('In Transit', style: TextStyle(fontSize: 30 / 1.5, fontWeight: FontWeight.w700))]),
+          const Padding(
+            padding: EdgeInsets.only(left: 34, top: 4, bottom: 12),
+            child: Text('Package has left the regional facility', style: TextStyle(color: Color(0xFF72849E))),
+          ),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1CCBDE), foregroundColor: Colors.white, minimumSize: const Size.fromHeight(54), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              child: const Text('Track Order', style: TextStyle(fontSize: 24 / 1.4, fontWeight: FontWeight.w700)),
             ),
           ),
-          Text(
-            isFree ? 'Free' : '\$${value.toStringAsFixed(2)}',
-            style: TextStyle(
-              color: isFree ? const Color(0xFF22C55E) : color,
-              fontWeight: FontWeight.w700,
-              fontSize: emphasize ? 34 : 16,
-            ),
-          )
         ],
       ),
     );
   }
-}
 
-class _SectionCard extends StatelessWidget {
-  final Widget child;
-
-  const _SectionCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _itemCard(OrderLineItemModel item) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: child,
-    );
-  }
-}
-
-class _OrderItemCard extends StatelessWidget {
-  final OrderProductModel item;
-
-  const _OrderItemCard({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE9EDF3))),
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              item.images.isNotEmpty ? item.images.first : '',
-              width: 84,
-              height: 84,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                width: 84,
-                height: 84,
-                color: const Color(0xFFF1F5F9),
-                child: const Icon(Icons.image_not_supported_outlined),
-              ),
-            ),
+            borderRadius: BorderRadius.circular(12),
+            child: item.image.isNotEmpty
+                ? Image.network(item.image, width: 88, height: 88, fit: BoxFit.cover)
+                : Container(width: 88, height: 88, color: const Color(0xFFEFF3F8), child: const Icon(Icons.image_outlined)),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.name,
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  item.description,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Color(0xFF64748B)),
-                ),
+                Text(item.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 26 / 1.45)),
+                const SizedBox(height: 2),
+                Text(item.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFF72849E))),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      '\$${item.price.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                          color: Color(0xFF17C3D6),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 30),
-                    ),
-                    const Spacer(),
-                    Text('Qty: ${item.quantity}',
-                        style: const TextStyle(color: Color(0xFF64748B))),
-                  ],
-                )
+                Text('\$${item.price.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF00C7DE), fontWeight: FontWeight.w800, fontSize: 24 / 1.2)),
               ],
             ),
-          )
+          ),
+          Text('Qty: ${item.quantity}', style: const TextStyle(color: Color(0xFF72849E), fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionCard({required IconData icon, required String title, required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE9EDF3))),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [Icon(icon, color: const Color(0xFF09C2D4), size: 20), const SizedBox(width: 8), Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 22 / 1.3))]),
+        const SizedBox(height: 12),
+        child,
+      ]),
+    );
+  }
+
+  Widget _priceSummary(OrderDetailsModel details) {
+    String f(double n) => '\$${n.toStringAsFixed(2)}';
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE9EDF3))),
+      child: Column(
+        children: [
+          const Align(alignment: Alignment.centerLeft, child: Text('Price Summary', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22 / 1.3))),
+          const SizedBox(height: 12),
+          _row('Subtotal (${details.items.length} items)', f(details.subtotal)),
+          _row('Shipping Fee', details.shippingFee == 0 ? 'Free' : f(details.shippingFee), valueColor: details.shippingFee == 0 ? const Color(0xFF1BBE7A) : null),
+          _row('Tax', f(details.tax)),
+          const Divider(height: 22),
+          _row('Total Amount', f(details.total), bold: true, valueColor: const Color(0xFF00C7DE)),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(String l, String r, {bool bold = false, Color? valueColor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(l, style: TextStyle(color: const Color(0xFF556985), fontWeight: bold ? FontWeight.w700 : FontWeight.w500, fontSize: 16)),
+          Text(r, style: TextStyle(color: valueColor ?? const Color(0xFF131722), fontWeight: bold ? FontWeight.w800 : FontWeight.w600, fontSize: bold ? 31 / 1.45 : 17)),
         ],
       ),
     );

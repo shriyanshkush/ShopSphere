@@ -1,28 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:shopsphere/core/services/api_service.dart';
-
-import '../models/order_model.dart';
+import 'package:shopsphere/features/orders/data/models/order_details_model.dart';
+import 'package:shopsphere/features/orders/data/models/order_summary_model.dart';
 
 class OrdersRemoteDataSource {
   final Dio dio = ApiService().dio;
 
-  Future<List<OrderModel>> getMyOrders({int page = 1, int limit = 20}) async {
-    final response = await dio.get(
-      '/api/orders/me',
-      queryParameters: {
-        'page': page,
-        'limit': limit,
-      },
-    );
-
-    final orders = response.data['orders'] as List<dynamic>? ?? const [];
-    return orders
-        .map((e) => OrderModel.fromJson(e as Map<String, dynamic>))
+  Future<List<OrderSummaryModel>> fetchMyOrders() async {
+    final res = await dio.get('/api/orders/me', queryParameters: {'limit': 100});
+    final items = (res.data['orders'] as List? ?? []);
+    return items
+        .map((e) => OrderSummaryModel.fromJson((e as Map).cast<String, dynamic>()))
         .toList();
   }
 
-  Future<OrderModel> getOrderDetails(String orderId) async {
-    final response = await dio.get('/api/orders/$orderId');
-    return OrderModel.fromJson(response.data as Map<String, dynamic>);
+  Future<OrderDetailsModel> fetchOrderDetails(String orderId) async {
+    final res = await dio.get('/api/orders/$orderId');
+    return OrderDetailsModel.fromJson((res.data as Map).cast<String, dynamic>());
   }
 }

@@ -9,5 +9,7 @@ class Routes {
   static const productDetail = '/product-detail'; // ✅ ADD
   static const profile = '/profile';
   static const orderConfirmed = '/order-confirmed';
+  static const orders = '/orders';
+  static const orderDetails = '/order-details';
 
 }

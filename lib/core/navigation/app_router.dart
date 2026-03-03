@@ -24,6 +24,10 @@ import 'package:shopsphere/features/orders/data/repositories/orders_repository_i
 import 'package:shopsphere/features/orders/presentation/bloc/orders_bloc.dart';
 import 'package:shopsphere/features/orders/presentation/pages/order_details_page.dart';
 import 'package:shopsphere/features/orders/presentation/pages/orders_page.dart';
+import 'package:shopsphere/features/chat/data/datasources/chat_remote_data_source.dart';
+import 'package:shopsphere/features/chat/data/repositories/chat_repository_impl.dart';
+import 'package:shopsphere/features/chat/presentation/bloc/chat_bloc.dart';
+import 'package:shopsphere/common/constants/base_url.dart';
 
 import '../../common/constants/GlobalVariable.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
@@ -52,12 +56,23 @@ class AppRouter {
 
       case Routes.home:
         return _page(
-          BlocProvider(
-            create: (_) => HomeBloc(
-              HomeRepositoryImpl(
-                HomeRemoteDataSource(),
+          MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) => HomeBloc(
+                  HomeRepositoryImpl(
+                    HomeRemoteDataSource(),
+                  ),
+                ),
               ),
-            ),
+              BlocProvider(
+                create: (_) => ChatBloc(
+                  ChatRepositoryImpl(
+                    ChatRemoteDataSource(baseUrl: baseUrl),
+                  ),
+                ),
+              ),
+            ],
             child: const HomeShellPage(),
           ),
         );

@@ -34,10 +34,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         isLoading: false,
         threadId: response['threadId'] as String?,
       ));
-    } catch (_) {
+    } catch (e) {
+      final message = e.toString().replaceFirst('Exception: ', '').trim();
       emit(state.copyWith(
         isLoading: false,
-        error: 'Could not connect to AI assistant.',
+        error: message.isEmpty ? 'Could not connect to AI assistant.' : message,
       ));
     }
   }

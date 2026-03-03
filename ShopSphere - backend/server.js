@@ -17,7 +17,7 @@ const productRouter = require('./routes/product');
 const userRouter = require('./routes/user');
 const reviewRouter = require('./routes/review');
 const wishlistRouter = require('./routes/wishlist');
-const chatRouter = require('./routes/chat');
+const chatRouter = require('./src/chat/routes/chat.routes');
 
 // Initialize Express
 const app = express();

@@ -1,8 +1,8 @@
-const { assistantSystemPrompt, runChatCompletion } = require('./aiService');
-const { searchProductsToolDef, searchProductsTool } = require('./searchProductsTool');
-const { getProductByIdToolDef, getProductByIdTool } = require('./getProductTool');
-const { getCartToolDef, getCartTool, addToCartToolDef, addToCartTool } = require('./cartTool');
-const logger = require('../chatLogger');
+const { assistantSystemPrompt, runChatCompletion } = require('../services/ai.service');
+const { searchProductsToolDef, searchProductsTool } = require('../tools/searchProducts.tool');
+const { getProductByIdToolDef, getProductByIdTool } = require('../tools/getProduct.tool');
+const { getCartToolDef, getCartTool, addToCartToolDef, addToCartTool } = require('../tools/cart.tool');
+const logger = require('../utils/logger');
 
 const tools = [searchProductsToolDef, getProductByIdToolDef, getCartToolDef, addToCartToolDef];
 const handlers = { searchProductsTool, getProductByIdTool, getCartTool, addToCartTool };

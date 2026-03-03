@@ -1,4 +1,4 @@
-const { createEmbedding } = require('./aiService');
+const { createEmbedding } = require('./ai.service');
 
 function cosineSimilarity(a = [], b = []) {
   if (!a.length || !b.length || a.length !== b.length) return 0;

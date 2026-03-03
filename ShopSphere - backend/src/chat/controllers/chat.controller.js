@@ -1,6 +1,6 @@
-const { runShoppingAgent } = require('../utils/chat/shoppingAgent');
-const { appendMessage, getHistory, getOrCreateThread, getThreadById } = require('../utils/chat/memoryService');
-const logger = require('../utils/chatLogger');
+const { runShoppingAgent } = require('../agents/shopping.agent');
+const { appendMessage, getHistory, getOrCreateThread, getThreadById } = require('../services/memory.service');
+const logger = require('../utils/logger');
 
 function validate(body = {}) {
   if (!body.userId || !body.message) return 'userId and message are required';

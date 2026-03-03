@@ -29,6 +29,11 @@ async function postChat(req, res) {
     return res.json({ reply, threadId: thread.threadId });
   } catch (err) {
     logger.error('Chat request failed', err.message);
+
+    if (err.message?.includes('Missing AI API key')) {
+      return res.status(503).json({ message: err.message });
+    }
+
     return res.status(500).json({ message: 'Unable to process chat right now. Please retry.' });
   }
 }

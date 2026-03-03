@@ -63,15 +63,17 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.productName,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold)),
-                        Text(widget.productSubtitle,
-                            style: const TextStyle(color: Colors.grey)),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(widget.productName,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold)),
+                          Text(widget.productSubtitle,
+                              style: const TextStyle(color: Colors.grey)),
+                        ],
+                      ),
                     ),
                   ],
                 ),

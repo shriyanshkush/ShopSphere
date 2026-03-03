@@ -8,12 +8,20 @@ Use markdown formatting.`;
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai';
 const LLM_MODEL = process.env.LLM_MODEL || 'gemini-2.0-flash';
 
+function getApiKey() {
+  return process.env.GEMINI_API_KEY || process.env.Gemini_API_KEY || process.env.OPENAI_API_KEY;
+}
+
 async function runChatCompletion(messages, tools) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error('Missing AI API key. Set GEMINI_API_KEY (or OPENAI_API_KEY).');
+  }
   const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.Gemini_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({ model: LLM_MODEL, temperature: 0.4, messages, tools }),
   });
@@ -26,11 +34,15 @@ async function runChatCompletion(messages, tools) {
 }
 
 async function createEmbedding(input) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error('Missing AI API key. Set GEMINI_API_KEY (or OPENAI_API_KEY).');
+  }
   const response = await fetch(`${OPENAI_BASE_URL}/embeddings`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.Gemini_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({ model: 'text-embedding-3-small', input }),
   });

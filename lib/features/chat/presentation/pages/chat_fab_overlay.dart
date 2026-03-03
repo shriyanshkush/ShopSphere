@@ -50,27 +50,56 @@ class _ChatFabOverlayState extends State<ChatFabOverlay> {
                   Expanded(
                     child: BlocBuilder<ChatBloc, ChatState>(
                       builder: (context, state) {
-                        return ListView.builder(
-                          itemCount: state.messages.length,
-                          itemBuilder: (_, index) {
-                            final message = state.messages[index];
-                            final isUser = message['role'] == 'user';
-                            return Align(
-                              alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 4),
-                                padding: const EdgeInsets.all(10),
+                        return Column(
+                          children: [
+                            if (state.error != null && state.error!.isNotEmpty)
+                              Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: isUser ? Colors.indigo : Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(16),
+                                  color: Colors.red.shade50,
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  message['content']?.toString() ?? '',
-                                  style: TextStyle(color: isUser ? Colors.white : Colors.black87),
+                                  state.error!,
+                                  style: TextStyle(color: Colors.red.shade700, fontSize: 12),
                                 ),
                               ),
-                            );
-                          },
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: state.messages.length,
+                                itemBuilder: (_, index) {
+                                  final message = state.messages[index];
+                                  final isUser = message['role'] == 'user';
+                                  return Align(
+                                    alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(vertical: 4),
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: isUser ? Colors.indigo : Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Text(
+                                        message['content']?.toString() ?? '',
+                                        style: TextStyle(color: isUser ? Colors.white : Colors.black87),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            if (state.isLoading)
+                              const Padding(
+                                padding: EdgeInsets.only(top: 8),
+                                child: SizedBox(
+                                  height: 16,
+                                  width: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                          ],
                         );
                       },
                     ),

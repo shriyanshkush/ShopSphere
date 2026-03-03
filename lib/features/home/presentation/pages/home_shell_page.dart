@@ -6,6 +6,8 @@ import 'package:shopsphere/features/home/presentation/pages/wishlist_page.dart';
 import 'package:shopsphere/features/home/presentation/pages/home_page.dart';
 import 'package:shopsphere/features/home/presentation/pages/search_page.dart';
 import 'package:shopsphere/features/profile/presentation/pages/profile_page.dart';
+import 'package:shopsphere/features/chat/presentation/pages/chat_fab_overlay.dart';
+import 'package:shopsphere/core/services/auth_local_storage.dart';
 
 class HomeShellPage extends StatefulWidget {
   const HomeShellPage({super.key});
@@ -16,6 +18,19 @@ class HomeShellPage extends StatefulWidget {
 
 class _HomeShellPageState extends State<HomeShellPage> {
   int _index = 0;
+  String _chatUserId = 'guest_user';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChatUser();
+  }
+
+  Future<void> _loadChatUser() async {
+    final user = await AuthLocalStorage().getUser();
+    if (!mounted) return;
+    setState(() => _chatUserId = user?.id.isNotEmpty == true ? user!.id : 'guest_user');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +44,12 @@ class _HomeShellPageState extends State<HomeShellPage> {
     ];
 
     return Scaffold(
-      body: IndexedStack(index: _index, children: pages),
+      body: Stack(
+        children: [
+          IndexedStack(index: _index, children: pages),
+          ChatFabOverlay(userId: _chatUserId),
+        ],
+      ),
       backgroundColor: Colors.white,
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,

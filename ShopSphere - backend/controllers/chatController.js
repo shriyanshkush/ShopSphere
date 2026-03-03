@@ -1,0 +1,55 @@
+const { runShoppingAgent } = require('../utils/chat/shoppingAgent');
+const { appendMessage, getHistory, getOrCreateThread, getThreadById } = require('../utils/chat/memoryService');
+const logger = require('../utils/chatLogger');
+
+function validate(body = {}) {
+  if (!body.userId || !body.message) return 'userId and message are required';
+  return null;
+}
+
+async function postChat(req, res) {
+  try {
+    const error = validate(req.body);
+    if (error) return res.status(400).json({ message: error });
+
+    const { userId, message, threadId } = req.body;
+    const thread = await getOrCreateThread(userId, threadId);
+
+    await appendMessage({ userId, threadId: thread.threadId, role: 'user', content: message });
+
+    const history = await getHistory(userId, thread.threadId);
+    const forwardedToken = req.headers['x-auth-token'] || req.headers.authorization;
+
+    let reply;
+    try {
+      reply = await runShoppingAgent({
+        history,
+        userMessage: message,
+        context: { userId, authToken: forwardedToken },
+      });
+    } catch (agentError) {
+      logger.error('Agent execution failed', agentError.message);
+      reply = 'I am having trouble reaching the AI service right now. Please try again shortly.';
+    }
+
+    await appendMessage({ userId, threadId: thread.threadId, role: 'assistant', content: reply });
+
+    return res.json({ reply, threadId: thread.threadId });
+  } catch (err) {
+    logger.error('Chat request failed', err.message);
+    return res.status(500).json({ message: 'Unable to process chat right now. Please retry.' });
+  }
+}
+
+async function getChatThread(req, res) {
+  try {
+    const thread = await getThreadById(req.params.threadId);
+    if (!thread) return res.status(404).json({ message: 'Thread not found' });
+    return res.json(thread);
+  } catch (err) {
+    logger.error('getChatThread failed', err.message);
+    return res.status(500).json({ message: 'Unable to fetch thread' });
+  }
+}
+
+module.exports = { postChat, getChatThread };

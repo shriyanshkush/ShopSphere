@@ -1,5 +1,19 @@
 const { createEmbedding } = require('./ai.service');
 
+function getApiBaseUrl() {
+  const configuredBaseUrl = process.env.EXISTING_API_BASE_URL;
+  if (configuredBaseUrl) return configuredBaseUrl;
+
+  const port = process.env.PORT || 3000;
+  return `http://127.0.0.1:${port}`;
+}
+
+
+function resolveAccessToken(authToken) {
+  if (!authToken || typeof authToken !== 'string') return null;
+  return authToken.replace(/^Bearer\s+/i, '').trim();
+}
+
 function cosineSimilarity(a = [], b = []) {
   if (!a.length || !b.length || a.length !== b.length) return 0;
   let dot = 0;
@@ -16,16 +30,27 @@ function cosineSimilarity(a = [], b = []) {
 }
 
 async function apiFetch(path, { method = 'GET', authToken, body, query } = {}) {
-  const url = new URL(path, process.env.EXISTING_API_BASE_URL);
+  const baseUrl = getApiBaseUrl();
+  let url;
+
+  try {
+    url = new URL(path, baseUrl);
+  } catch (error) {
+    throw new Error(`Invalid EXISTING_API_BASE_URL configuration: ${baseUrl}`);
+  }
+
   if (query) {
     Object.keys(query).forEach((key) => url.searchParams.set(key, query[key]));
   }
+
+  const token = resolveAccessToken(authToken);
 
   const response = await fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(authToken ? { Authorization: authToken } : {}),
+      ...(token ? { 'x-auth-token': token } : {}),
+      ...(authToken ? { Authorization: authToken.startsWith('Bearer ') ? authToken : `Bearer ${token}` } : {}),
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
@@ -38,7 +63,7 @@ async function apiFetch(path, { method = 'GET', authToken, body, query } = {}) {
 }
 
 async function searchProducts(query, authToken) {
-  const data = await apiFetch('/products', { query: { search: query }, authToken });
+  const data = await apiFetch('/api/products', { query: { search: query }, authToken });
   const products = Array.isArray(data) ? data : data.products || [];
   if (!products.length) return [];
 
@@ -54,9 +79,9 @@ async function searchProducts(query, authToken) {
   return ranked.sort((a, b) => b.score - a.score).slice(0, 5);
 }
 
-const getProductById = (productId, authToken) => apiFetch(`/products/${productId}`, { authToken });
-const getCart = (userId, authToken) => apiFetch('/cart', { authToken, query: { userId } });
+const getProductById = (productId, authToken) => apiFetch(`/api/products/${productId}/detail`, { authToken });
+const getCart = (userId, authToken) => apiFetch('/api/cart', { authToken, query: { userId } });
 const addToCart = (productId, quantity, authToken) =>
-  apiFetch('/cart/add', { method: 'POST', authToken, body: { productId, quantity } });
+  apiFetch('/api/add-to-cart', { method: 'POST', authToken, body: { product: productId, quantity } });
 
 module.exports = { searchProducts, getProductById, getCart, addToCart };

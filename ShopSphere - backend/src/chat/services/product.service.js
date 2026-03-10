@@ -41,11 +41,14 @@ async function apiFetch(path, { method = 'GET', authToken, body, query } = {}) {
     Object.keys(query).forEach((key) => url.searchParams.set(key, query[key]));
   }
 
+  const token = resolveAccessToken(authToken);
+
   const response = await fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(authToken ? { Authorization: authToken } : {}),
+      ...(token ? { 'x-auth-token': token } : {}),
+      ...(authToken ? { Authorization: authToken.startsWith('Bearer ') ? authToken : `Bearer ${token}` } : {}),
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });

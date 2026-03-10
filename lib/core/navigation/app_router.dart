@@ -68,7 +68,7 @@ class AppRouter {
               BlocProvider(
                 create: (_) => ChatBloc(
                   ChatRepositoryImpl(
-                    ChatRemoteDataSource(baseUrl: baseUrl),
+                    ChatRemoteDataSource(),
                   ),
                 ),
               ),

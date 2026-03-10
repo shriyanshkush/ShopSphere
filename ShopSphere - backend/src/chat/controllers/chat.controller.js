@@ -4,7 +4,12 @@ const logger = require('../utils/logger');
 
 
 function getAuthTokenFromRequest(req) {
-  return req.headers['x-auth-token'] || req.headers.authorization || null;
+  const headerToken = req.headers['x-auth-token'];
+  if (headerToken) return headerToken;
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return null;
+  return authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader;
 }
 
 function validate(body = {}) {
@@ -37,6 +42,10 @@ async function postChat(req, res) {
 
     if (err.message?.includes('Missing AI API key')) {
       return res.status(503).json({ message: err.message });
+    }
+
+    if (err.status === 429 || err.message?.includes('429')) {
+      return res.status(429).json({ message: 'AI service is busy. Please retry in a few moments.' });
     }
 
     return res.status(500).json({ message: 'Unable to process chat right now. Please retry.' });

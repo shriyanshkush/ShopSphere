@@ -12,6 +12,13 @@ function normalizePath(path) {
   return path.startsWith('/') ? path.slice(1) : path;
 }
 
+
+function resolveAccessToken(authToken) {
+  if (!authToken) return null;
+  if (authToken.startsWith('Bearer ')) return authToken.slice(7).trim();
+  return authToken.trim();
+}
+
 function cosineSimilarity(a = [], b = []) {
   if (!a.length || !b.length || a.length !== b.length) return 0;
   let dot = 0;
@@ -48,7 +55,7 @@ async function apiFetch(path, { method = 'GET', authToken, body, query } = {}) {
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { 'x-auth-token': token } : {}),
-      ...(authToken ? { Authorization: authToken.startsWith('Bearer ') ? authToken : `Bearer ${token}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
@@ -65,16 +72,20 @@ async function searchProducts(query, authToken) {
   const products = Array.isArray(data) ? data : data.products || [];
   if (!products.length) return [];
 
-  const queryEmbedding = await createEmbedding(query);
-  const ranked = await Promise.all(
-    products.slice(0, 20).map(async (product) => {
-      const text = `${product.name || ''} ${product.description || ''}`.trim();
-      const emb = await createEmbedding(text);
-      return { ...product, score: cosineSimilarity(queryEmbedding, emb) };
-    })
-  );
+  try {
+    const queryEmbedding = await createEmbedding(query);
+    const ranked = await Promise.all(
+      products.slice(0, 10).map(async (product) => {
+        const text = `${product.name || ''} ${product.description || ''}`.trim();
+        const emb = await createEmbedding(text);
+        return { ...product, score: cosineSimilarity(queryEmbedding, emb) };
+      })
+    );
 
-  return ranked.sort((a, b) => b.score - a.score).slice(0, 5);
+    return ranked.sort((a, b) => b.score - a.score).slice(0, 5);
+  } catch {
+    return products.slice(0, 5);
+  }
 }
 
 const getProductById = (productId, authToken) => apiFetch(`products/${productId}/detail`, { authToken });

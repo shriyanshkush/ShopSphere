@@ -7,6 +7,26 @@ Use markdown formatting.`;
 
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai';
 const LLM_MODEL = process.env.LLM_MODEL || 'gemini-2.0-flash';
+const MAX_RETRIES = Number(process.env.LLM_MAX_RETRIES || 2);
+
+class LlmRequestError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.name = 'LlmRequestError';
+    this.status = status;
+  }
+}
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function parseErrorMessage(response) {
+  try {
+    const payload = await response.json();
+    return payload?.error?.message || payload?.message || `status ${response.status}`;
+  } catch {
+    return `status ${response.status}`;
+  }
+}
 
 function getApiKey() {
   return process.env.GEMINI_API_KEY || process.env.Gemini_API_KEY || process.env.OPENAI_API_KEY;
@@ -17,20 +37,33 @@ async function runChatCompletion(messages, tools) {
   if (!apiKey) {
     throw new Error('Missing AI API key. Set GEMINI_API_KEY (or OPENAI_API_KEY).');
   }
-  const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({ model: LLM_MODEL, temperature: 0.4, messages, tools }),
-  });
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
+    const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ model: LLM_MODEL, temperature: 0.4, messages, tools }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`LLM request failed with status ${response.status}`);
+    if (response.ok) {
+      return response.json();
+    }
+
+    const details = await parseErrorMessage(response);
+    const retryable = response.status === 429 || response.status >= 500;
+    const canRetry = retryable && attempt < MAX_RETRIES;
+
+    if (canRetry) {
+      await sleep((attempt + 1) * 500);
+      continue;
+    }
+
+    throw new LlmRequestError(`LLM request failed (${response.status}): ${details}`, response.status);
   }
 
-  return response.json();
+  throw new LlmRequestError('LLM request failed unexpectedly', 500);
 }
 
 async function createEmbedding(input) {

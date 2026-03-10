@@ -2,6 +2,11 @@ const { runShoppingAgent } = require('../agents/shopping.agent');
 const { appendMessage, getHistory, getOrCreateThread, getThreadById } = require('../services/memory.service');
 const logger = require('../utils/logger');
 
+
+function getAuthTokenFromRequest(req) {
+  return req.headers['x-auth-token'] || req.headers.authorization || null;
+}
+
 function validate(body = {}) {
   if (!body.userId || !body.message) return 'userId and message are required';
   return null;
@@ -21,7 +26,7 @@ async function postChat(req, res) {
     const reply = await runShoppingAgent({
       history,
       userMessage: message,
-      context: { userId, authToken: req.headers.authorization },
+      context: { userId, authToken: getAuthTokenFromRequest(req) },
     });
 
     await appendMessage({ userId, threadId: thread.threadId, role: 'assistant', content: reply });

@@ -5,7 +5,11 @@ function getApiBaseUrl() {
   if (configuredBaseUrl) return configuredBaseUrl;
 
   const port = process.env.PORT || 3000;
-  return `http://127.0.0.1:${port}`;
+  return `http://127.0.0.1:${port}/api/`;
+}
+
+function normalizePath(path) {
+  return path.startsWith('/') ? path.slice(1) : path;
 }
 
 function cosineSimilarity(a = [], b = []) {
@@ -28,7 +32,7 @@ async function apiFetch(path, { method = 'GET', authToken, body, query } = {}) {
   let url;
 
   try {
-    url = new URL(path, baseUrl);
+    url = new URL(normalizePath(path), baseUrl);
   } catch (error) {
     throw new Error(`Invalid EXISTING_API_BASE_URL configuration: ${baseUrl}`);
   }
@@ -54,7 +58,7 @@ async function apiFetch(path, { method = 'GET', authToken, body, query } = {}) {
 }
 
 async function searchProducts(query, authToken) {
-  const data = await apiFetch('/api/products', { query: { search: query }, authToken });
+  const data = await apiFetch('products', { query: { search: query }, authToken });
   const products = Array.isArray(data) ? data : data.products || [];
   if (!products.length) return [];
 
@@ -70,9 +74,9 @@ async function searchProducts(query, authToken) {
   return ranked.sort((a, b) => b.score - a.score).slice(0, 5);
 }
 
-const getProductById = (productId, authToken) => apiFetch(`/api/products/${productId}/detail`, { authToken });
-const getCart = (userId, authToken) => apiFetch('/api/cart', { authToken, query: { userId } });
+const getProductById = (productId, authToken) => apiFetch(`products/${productId}/detail`, { authToken });
+const getCart = (userId, authToken) => apiFetch('cart', { authToken, query: { userId } });
 const addToCart = (productId, quantity, authToken) =>
-  apiFetch('/api/add-to-cart', { method: 'POST', authToken, body: { product: productId, quantity } });
+  apiFetch('add-to-cart', { method: 'POST', authToken, body: { product: productId, quantity } });
 
 module.exports = { searchProducts, getProductById, getCart, addToCart };

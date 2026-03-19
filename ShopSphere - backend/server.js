@@ -17,7 +17,6 @@ const productRouter = require('./routes/product');
 const userRouter = require('./routes/user');
 const reviewRouter = require('./routes/review');
 const wishlistRouter = require('./routes/wishlist');
-const chatRouter = require('./src/chat/routes/chat.routes');
 
 // Initialize Express
 const app = express();
@@ -55,7 +54,6 @@ app.use(productRouter);
 app.use(userRouter);
 app.use(reviewRouter);
 app.use(wishlistRouter);
-app.use('/api', chatRouter);
 
 // Error Handler (must be last)
 app.use(errorHandler);

@@ -6,6 +6,10 @@ ShopSphere provides a complete online shopping experience with **authentication,
 
 * * *
 
+## Demo Video
+
+[![Watch the video](assets/video_thumbnail.png)](https://drive.google.com/file/d/19_33-IHwpc5MrywlZl03fRowMkimxy5k/view?usp=sharing](https://drive.google.com/file/d/1Gvtx0Sjkhj_x6kWX_REQNxzburnAooD5/view?usp=sharing)
+
 ## 📌 Table of Contents
 
 *   [Features](#features)
